@@ -1,0 +1,84 @@
+/* The Cut Receipt (docs/design/foundation.md), kept simple: one paper strip, two inks. */
+:root {
+  --paper: #F4F4F0;
+  --ink: #151515;
+  --ink-faded: #6B6B66;
+  --cut: #B81D32;
+  --page: #FFFFFF;
+  --mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color-scheme: light;
+}
+/* The receipt stays paper in dark mode, like a physical object; only the page around it darkens. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --page: #000000; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --page: #000000; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 1rem/1.6 var(--sans);
+  padding: 24px 16px 48px;
+}
+.strip {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--paper);
+  padding: 28px 22px 40px;
+  border-top: 6px solid var(--ink); /* printer slot */
+  position: relative;
+  overflow-wrap: anywhere;
+}
+/* perforated tear edge */
+.strip::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -10px; height: 10px;
+  background: radial-gradient(circle at 10px 0, transparent 6px, var(--paper) 6.5px) 0 0 / 20px 10px repeat-x;
+  transform: scaleY(-1);
+}
+@media (min-width: 600px) { .strip { padding: 40px 48px 56px; } body { padding-top: 48px; } }
+
+.brand {
+  font: 800 0.8rem/1 var(--mono);
+  font-stretch: 112.5%;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+}
+nav { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; margin-bottom: 28px; }
+nav .links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; }
+nav .links a { font: 400 0.75rem/1.8 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faded); }
+nav .links a[aria-current="page"] { color: var(--ink); text-decoration-thickness: 2px; }
+
+h1, h2, h3 { font-family: var(--mono); font-stretch: 112.5%; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.3; }
+h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px; }
+h2 { font-size: 1rem; font-weight: 700; margin: 0 0 12px; padding-top: 24px; border-top: 2px dashed var(--ink); }
+h3 { font-size: 0.85rem; font-weight: 700; margin: 20px 0 8px; }
+section { margin-top: 28px; scroll-margin-top: 16px; }
+.meta { font: 400 0.75rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 20px; }
+p, ul, ol { margin: 0 0 12px; }
+ul, ol { padding-left: 1.25em; }
+li { margin-bottom: 6px; }
+a { color: var(--ink); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+strong { font-weight: 650; }
+.lede { font-size: 1.05rem; }
+
+/* Receipt line items: label left, value right, wrap instead of truncating. */
+.lines { list-style: none; padding: 0; margin: 0 0 16px; font: 400 0.8rem/1.5 var(--mono); }
+.lines li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; padding: 8px 0; border-bottom: 1px dashed var(--ink-faded); margin: 0; }
+.lines li span:first-child { font-weight: 700; text-transform: uppercase; }
+@media (min-width: 600px) { .lines li span:last-child { text-align: right; margin-left: auto; max-width: 60%; } }
+.lines li.cut span:first-child { color: var(--cut); }
+.lines li.total { border-bottom: 0; border-top: 2px dashed var(--ink); font-weight: 800; }
+
+.contact { font-family: var(--mono); font-size: 0.9rem; }
+footer a { color: inherit; }
+footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { color: #9A9A94; } }
