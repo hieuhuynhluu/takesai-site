@@ -82,3 +82,47 @@ strong { font-weight: 650; }
 footer a { color: inherit; }
 footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { color: #9A9A94; } }
+
+/* ---- Marketing site skeleton (spec 007, contracts/site-interfaces.md) ---- */
+
+/* Launch switch (FR-002). Release 1.0 ships without the trial, the web checkout and the affiliate
+   program; they arrive together in the next release. When that release is live, swap these two lines. */
+.if-trial { display: none !important; }
+/* .if-no-trial { display: none !important; } */
+
+/* Actions: one primary, one quiet. */
+.btn {
+  display: inline-block;
+  font: 700 0.85rem/1 var(--mono);
+  font-stretch: 112.5%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--paper);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 14px 18px;
+}
+.btn:hover { background: #000; border-color: #000; }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.btn-quiet { color: var(--ink); background: transparent; }
+.btn-quiet:hover { background: var(--ink); color: var(--paper); }
+/* The one primary action of a Persuade page is red: red means "cut" (docs/design/foundation.md, Color). */
+.btn-cut { background: var(--cut); border-color: var(--cut); color: #fff; }
+.btn-cut:hover { background: #9A1528; border-color: #9A1528; }
+.btn-cut:focus-visible { outline-color: var(--ink); }
+
+/* No double rule above a receipt total. */
+.lines li:has(+ .total) { border-bottom: 0; }
+
+/* The Torn Tile lockup (docs/design/logo/) replaces the text brand; the strip stays paper in both modes, so the light version always applies. */
+.brand img { display: block; height: 22px; width: auto; }
+
+/* Standard footer: the existing footer rule, links kept whole on narrow screens. */
+.site-footer a { white-space: nowrap; }
+footer a:focus-visible { outline-color: currentColor; } /* an ink ring vanishes on the dark ground */
+
+/* Light mode: a faint ink edge keeps the paper strip and its perforation visible on white (foundation: 14% ink hairline). */
+.strip { filter: drop-shadow(0 0 0.75px rgb(21 21 21 / 0.45)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .strip { filter: none; } }
+:root[data-theme="dark"] .strip { filter: none; }

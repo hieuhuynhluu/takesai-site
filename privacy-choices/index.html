@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<title>TakesAI Privacy Choices</title>
+<meta name="description" content="Opt out of, or back into, the ad measurement this website does with Meta and TikTok.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="stylesheet" href="../style.css">
+<style>
+  [hidden] { display: none !important; }
+  button.btn { cursor: pointer; border-radius: 0; }
+</style>
+<script src="../assets/site.js" defer></script>
+</head>
+<body>
+<main class="strip">
+<nav>
+  <a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a>
+  <span class="links"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../support/">Support</a></span>
+</nav>
+
+<h1>Your privacy choices</h1>
+<p class="meta">Last updated 13 November 2026 · Applies to the takesai.app website</p>
+
+<p class="lede">This website can measure our ads with Meta and TikTok. Here you can turn that off, or back on, for this browser.</p>
+
+<section id="choice">
+<h2>Your choice</h2>
+<p id="no-control">With JavaScript off, this site sends nothing to ad platforms, so there is nothing to opt out of. The control on this page needs JavaScript.</p>
+
+<div id="control" hidden>
+  <ul class="lines" aria-label="Your current settings">
+    <li><span>Global Privacy Control</span><span id="gpc-state"></span></li>
+    <li><span>Your choice on this browser</span><span id="choice-state"></span></li>
+  </ul>
+  <p><button type="button" class="btn" id="toggle"></button></p>
+  <p id="gpc-note" hidden>Your browser's signal keeps you opted out. To opt back in, turn Global Privacy Control off in your browser's settings.</p>
+  <p id="reload-note">Opting out reloads this page, so anything already loaded from Meta or TikTok is dropped.</p>
+  <p id="message" role="status"></p>
+</div>
+
+<p>If your browser sends the Global Privacy Control signal, we treat it as an opt-out and honour it automatically on every visit, whatever you choose here.</p>
+
+
+<p>Your choice applies only to this browser on this device. It is saved in this site's storage in your browser, so if you clear this site's data, or use another browser or device, choose again. Global Privacy Control is honoured either way.</p>
+</section>
+
+<section id="what">
+<h2>What ad measurement does</h2>
+<p>When it is on, this website tells Meta (Facebook and Instagram) and TikTok when you open a page and when you tap Download on the App Store<span class="if-trial">, the affiliate sign-up or the button that starts a web checkout</span>. With each report they receive the page address, your IP address, details of your browser and an identifier saved in your browser. They use it to measure how well our ads work, and they may connect it to your account on their service.</p>
+<p>Some US state privacy laws treat this as "sharing" personal information for advertising, and give you the right to opt out. Opting out changes nothing else: the site works the same.</p>
+</section>
+
+<section id="app">
+<h2>The TakesAI app</h2>
+<p>These choices are about this website. The TakesAI app itself has no ad or attribution tracking, so there is nothing to turn off there. What the app collects, and why, is in our <a href="../privacy/">Privacy Policy</a>.</p>
+</section>
+</main>
+<footer class="site-footer">
+  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+</footer>
+<script>
+// Runs after the deferred site.js. If site.js didn't run, nothing is sent either, so the no-JavaScript text stays.
+document.addEventListener('DOMContentLoaded', function () {
+  var t = window.takesai;
+  if (!t) return;
+  var gpc = navigator.globalPrivacyControl === true;
+  var $ = function (id) { return document.getElementById(id); };
+  function render() {
+    var out = t.optedOut();
+    $('gpc-state').textContent = gpc ? 'On: honoured' : 'Off';
+    $('choice-state').textContent = out ? 'Opted out' : 'Not opted out';
+    $('toggle').textContent = out ? 'Opt back in' : 'Opt out';
+    $('toggle').hidden = gpc;
+    $('gpc-note').hidden = !gpc;
+    $('reload-note').hidden = gpc || out;
+  }
+  $('toggle').addEventListener('click', function () {
+    var out = !t.optedOut();
+    if (!t.setOptOut(out)) {
+      $('message').textContent = out
+        ? 'This browser would not save your choice, so it lasts only while this page is open.'
+        : 'This browser blocks site storage, so you stay opted out.';
+    } else if (out) {
+      location.reload();
+      return;
+    } else {
+      $('message').textContent = 'You opted back in.';
+    }
+    render();
+  });
+  $('no-control').hidden = true;
+  $('control').hidden = false;
+  render();
+});
+</script>
+</body>
+</html>

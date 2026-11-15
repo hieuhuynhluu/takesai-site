@@ -3,22 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <title>TakesAI Support</title>
 <meta name="description" content="Get help with TakesAI: contact, subscriptions, restoring purchases, deleting a cut or your account.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
 <link rel="stylesheet" href="../style.css">
+<script src="../assets/site.js" defer></script>
 </head>
 <body>
 <main class="strip">
 <nav>
-  <a class="brand" href="../">TakesAI</a>
+  <a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a>
   <span class="links"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="./" aria-current="page">Support</a></span>
 </nav>
 
 <h1>Support</h1>
-<p class="meta">TakesAI by Hieu Luu</p>
+<p class="meta">TakesAI by Hieu Luu, a sole proprietor</p>
 
 <section id="contact">
 <h2>Contact us</h2>
@@ -64,6 +67,17 @@
 </ul>
 </section>
 
+<section id="web" class="if-trial">
+<h2>Bought on takesai.app?</h2>
+<p>A plan bought on our website is billed by Stripe, not by an app store, so the App Store and Google Play steps above do not apply to it.</p>
+<ul>
+  <li><strong>Cancel or change your card:</strong> open the customer portal with the link in your receipt email, or email <a href="mailto:support@takesai.app">support@takesai.app</a> from the address you bought with. You keep your plan until the period you paid for ends. To avoid being charged after a free trial, cancel before the trial ends.</li>
+  <li><strong>Refunds:</strong> email <a href="mailto:support@takesai.app">support@takesai.app</a>. The rules are in our <a href="../terms/#web-refunds">Terms</a>.</li>
+  
+  <li><strong>Use your plan in the app:</strong> download TakesAI and sign in. If your plan isn't showing, email us from the address you bought with and we will link it.</li>
+</ul>
+</section>
+
 <section id="delete-cut">
 <h2>Delete a cut</h2>
 <p>Delete it in the Cuts library (long-press, or Select → Delete) or in <strong>You → Settings → Storage</strong>. It is removed from your phone, and its audio, transcript and cut list are deleted from our servers. An edit it already used is not given back.</p>
@@ -88,7 +102,7 @@
 
 <section id="privacy">
 <h2>Privacy and AI processing</h2>
-<p>Only your video's audio and a list of its frame times leave your phone. When you tap Send, the audio goes to ElevenLabs (or AssemblyAI if ElevenLabs is down) for transcription and the transcript text to Anthropic to decide the cut. Read the <a href="../privacy/">Privacy Policy</a>, or email <a href="mailto:privacy@takesai.app">privacy@takesai.app</a>.</p>
+<p>Only your video's audio and a list of its frame times leave your phone. Before your first cut, the app asks you to agree to sending the audio to ElevenLabs (or AssemblyAI if ElevenLabs is down) for transcription and the transcript text to Anthropic to decide the cut. You can withdraw that in Settings. Read the <a href="../privacy/">Privacy Policy</a>, or email <a href="mailto:privacy@takesai.app">privacy@takesai.app</a>.</p>
 </section>
 
 <section id="report-abuse">
@@ -96,6 +110,8 @@
 <p>Email <a href="mailto:support@takesai.app">support@takesai.app</a>. See <a href="../terms/#illegal-content">Terms section 8</a>.</p>
 </section>
 </main>
-<footer>TakesAI · <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a></footer>
+<footer class="site-footer">
+  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+</footer>
 </body>
 </html>

@@ -3,23 +3,127 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TakesAI</title>
-<meta name="description" content="TakesAI turns your messy talking-head takes into a clean cut.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<title>TakesAI: edit less, post more</title>
+<meta name="description" content="Record or import your talking-head takes and tap Send. TakesAI cuts the retakes, ums and dead air and hands back one clean cut, with a receipt of everything it removed.">
+<link rel="canonical" href="https://takesai.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TakesAI">
+<meta property="og:title" content="TakesAI: edit less, post more">
+<meta property="og:description" content="Your takes in. One clean cut out. TakesAI cuts the retakes, ums and dead air from your talking videos and shows you everything it removed.">
+<meta property="og:url" content="https://takesai.app/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/home.css">
+<script src="assets/site.js" defer></script>
 </head>
-<body>
+<body class="home">
 <main class="strip">
-<nav><a class="brand" href="./">TakesAI</a></nav>
-<h1>TakesAI</h1>
-<p class="lede">Turns your messy talking-head takes into a clean cut.</p>
-<ul class="lines">
-  <li><span><a href="privacy/">Privacy Policy</a></span><span>What we collect and how to delete it</span></li>
-  <li><span><a href="terms/">Terms of Use</a></span><span>Subscriptions, edits and fair use</span></li>
-  <li><span><a href="support/">Support</a></span><span>Contact, cancelling, deleting your account</span></li>
-</ul>
+<nav aria-label="Main"><a class="brand" href="./"><img src="assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="#how">How it works</a> <a href="#plans">Plans</a> <a href="support/">Support</a></span></nav>
+
+<header class="hero">
+  <h1>Edit less. <span>Post more.</span></h1>
+  <p class="tagline">Your takes in. One clean cut out.</p>
+  <p class="lede">Record or import your talking-head takes, tap Send and put the phone down. TakesAI cuts the retakes, ums and dead air and hands back one clean cut, with a receipt of everything it removed.</p>
+  <p class="actions">
+    <a class="btn btn-cut" href="https://apps.apple.com/app/id6833252992" data-track="download">Download on the App Store</a>
+    <a class="btn btn-quiet" href="#how">See how it works</a>
+  </p>
+</header>
+
+<section class="sample" aria-labelledby="sample-h">
+  <h2 id="sample-h">Every cut comes with a receipt</h2>
+  <p class="meta">Sample receipt · made-up numbers, to show the layout</p>
+  <!-- 252 s raw: ink = kept (94 s), red = cut (158 s). Widths are seconds. -->
+  <div class="tape" aria-hidden="true"><i style="flex:22"></i><b style="flex:41"></b><i style="flex:9"></i><b style="flex:5"></b><i style="flex:17"></i><b style="flex:36"></b><i style="flex:14"></i><b style="flex:20"></b><i style="flex:11"></i><b style="flex:4"></b><i style="flex:8"></i><b style="flex:31"></b><i style="flex:13"></i><b style="flex:21"></b></div>
+  <ul class="lines">
+    <li><span>Raw video</span><span>4:12</span></li>
+    <li class="cut"><span>− Retakes × 3</span><span>− 1:48</span></li>
+    <li class="cut"><span>− Ums × 14</span><span>− 0:09</span></li>
+    <li class="cut"><span>− Dead air</span><span>− 0:41</span></li>
+    <li class="total"><span>Your cut</span><span>1:34</span></li>
+  </ul>
+  <p>The totals always add up: raw length, minus what was cut, is the length you keep. Changed your mind? Any removed take comes back with a tap.</p>
+</section>
+
+<section id="how" aria-labelledby="how-h">
+  <h2 id="how-h">How it works</h2>
+  <ol class="steps">
+    <li><h3>Film in takes</h3><p>Record in the TakesAI camera, pausing between takes, or import a video you already filmed.</p></li>
+    <li><h3>Tap Send and walk away</h3><p>You can leave the app. A notification tells you when the cut is ready. On Pro and Ultimate, Batch sends up to 10 videos at once.</p></li>
+    <li><h3>Get the cut and its receipt</h3><p>Any removed take comes back with a tap. Refine the cut in the editor, then save it or share it.</p></li>
+  </ol>
+</section>
+
+<section aria-labelledby="who-h">
+  <h2 id="who-h">For people who post every day</h2>
+  <p>TakesAI is built for creators who film talking videos daily, such as TikTok Shop affiliates and UGC creators. When the editing is done for you, a shoot turns into more videos and more posts.</p>
+</section>
+
+<section aria-labelledby="trust-h">
+  <h2 id="trust-h">Send it and walk away</h2>
+  <ul class="lines reasons">
+    <li><span>A failed cut never uses an edit</span><span>An edit is used only when a cut opens in your editor.</span></li>
+    <li><span>Every removed take can come back</span><span>Put it back in the editor with a tap.</span></li>
+    <li><span>The receipt shows every cut</span><span>Each retake, um and stretch of dead air, itemised.</span></li>
+    <li><span>Your video stays on your phone</span><span>Only its sound and a list of frame times are sent to make the cut. <a href="privacy/">Privacy Policy</a></span></li>
+  </ul>
+</section>
+
+<section aria-labelledby="cost-h">
+  <h2 id="cost-h">What editing costs</h2>
+  <ul class="lines">
+    <li><span>Cut it yourself</span><span>Your own time, every video</span></li>
+    <li><span>Hire an editor</span><span>Typically $8–15 a video, $400+ a month</span></li>
+    <li><span>TakesAI</span><span><strong>From $19.99 a month for 100 edits</strong></span></li>
+  </ul>
+</section>
+
+<section id="plans" aria-labelledby="plans-h">
+  <h2 id="plans-h">Plans</h2>
+  <ul class="lines plans">
+    <li><span>Starter</span><span>$19.99 a month</span><small>100 edits a month · or $159.99 a year</small></li>
+    <li><span>Pro</span><span>$49.99 a month</span><small>300 edits a month, plus Batch and overlap audio · or $399.99 a year</small></li>
+    <li><span>Ultimate</span><span>$89.99 a month</span><small>Unlimited edits within fair use (up to 50 a day), plus Batch and overlap audio · or $719.99 a year</small></li>
+  </ul>
+  <p>One edit is used when a cut first opens in your editor. A failed or cancelled cut uses none, and a cut never uses more than one, however often you re-cut or export it. The details are in the <a href="terms/">Terms of Use</a>.</p>
+  <p class="if-trial"><strong>Every plan starts with a 3-day free trial, then the plan's price.</strong></p>
+  <p class="if-no-trial">Subscribe in the app. Cancel anytime in your Apple ID settings.</p>
+</section>
+
+<section id="android" aria-labelledby="android-h">
+  <h2 id="android-h">Android</h2>
+  <p>TakesAI is on iPhone today. Android is on the way.</p>
+</section>
+
+<section class="if-trial" aria-labelledby="earn-h">
+  <h2 id="earn-h">Earn with TakesAI</h2>
+  <p>Post about TakesAI and earn 30% of every payment a customer you send makes in their first year. <a href="earn/">See how the affiliate program works</a></p>
+</section>
+
+<section aria-labelledby="faq-h">
+  <h2 id="faq-h">Questions</h2>
+  <div class="faq">
+    <details><summary>What does TakesAI cut?</summary><p>Retakes (it keeps your best take), ums and other fillers, and dead air. It adds word-by-word captions too.</p></details>
+    <details><summary>Can I undo a cut?</summary><p>Yes. The receipt lists everything that was removed, and any removed take comes back with a tap in the editor. Cuts are made automatically and can be wrong, so check each one before you post it.</p></details>
+    <details><summary>What leaves my phone?</summary><p>Your video stays on your phone. To make a cut, the app sends only the sound of the video and a list of the times its frames appear, which contains no pictures. The <a href="privacy/">Privacy Policy</a> names who receives it and how long it is kept.</p></details>
+    <details><summary>What is an edit?</summary><p>One edit is used when a cut first opens in your editor. A failed or cancelled cut never uses one. Edits renew every month and unused edits do not carry over.</p></details>
+    <details><summary>How long can a video be?</summary><p>Up to 20 minutes.</p></details>
+    <details><summary>Is there an Android app?</summary><p>Not yet. TakesAI is on iPhone today, and Android is on the way.</p></details>
+    <details><summary>How do I cancel?</summary><p>In your Apple ID subscription settings. You keep your plan until the end of the period you paid for. <a href="support/">Support</a> has the steps.</p></details>
+  </div>
+</section>
+
+<section class="closer" aria-labelledby="closer-h">
+  <h2 id="closer-h">Film your next shoot in takes. Tap Send.</h2>
+  <p class="actions"><a class="btn btn-cut" href="https://apps.apple.com/app/id6833252992" data-track="download">Download on the App Store</a></p>
+</section>
 </main>
+<footer class="site-footer">
+  <a href="privacy/">Privacy</a> · <a href="terms/">Terms</a> · <a href="support/">Support</a><span class="if-trial"> · <a href="earn/">Earn with TakesAI</a></span> · <a href="privacy-choices/">Your privacy choices</a>
+</footer>
 </body>
 </html>
