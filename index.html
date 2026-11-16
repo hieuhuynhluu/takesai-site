@@ -24,6 +24,26 @@
 <main class="strip">
 <nav aria-label="Main"><a class="brand" href="./"><img src="assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="#how">How it works</a> <a href="#plans">Plans</a> <a href="support/">Support</a></span></nav>
 
+<!-- Black Friday (spec 012; docs/marketing/black-friday.md). Hidden unless the script below finds SALE_ON and the offer window. -->
+<section class="sale" id="sale" hidden aria-labelledby="sale-h">
+  <h2 id="sale-h">Black Friday: 50% off your first year</h2>
+  <p class="meta">Yearly plans · new subscribers · on iPhone · ends Monday</p>
+  <ul class="lines plans">
+    <li><span>Starter, yearly</span><span><s><span class="sr">Regular price </span>$159.99</s> $79.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $159.99 a year</small></li>
+    <li><span>Pro, yearly</span><span><s><span class="sr">Regular price </span>$399.99</s> $199.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $399.99 a year</small></li>
+    <li><span>Ultimate, yearly</span><span><s><span class="sr">Regular price </span>$719.99</s> $359.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $719.99 a year</small></li>
+  </ul>
+  <p class="actions"><a class="btn btn-quiet" href="https://apps.apple.com/app/id6833252992" data-track="download">Get it on the App Store</a></p>
+</section>
+<script>
+  // SALE_ON turns true only once the App Store offer exists (the founder's go). START and END are the US offer's real
+  // start and end from App Store Connect. Outside that window, or with JavaScript off, nothing shows; it ends by itself.
+  (function () {
+    var SALE_ON = false, START = Date.parse('2026-11-27T04:00:00Z'), END = Date.parse('2026-12-01T04:00:00Z'), now = Date.now();
+    if (SALE_ON && now >= START && now < END) document.getElementById('sale').hidden = false;
+  })();
+</script>
+
 <header class="hero">
   <h1>Edit less. <span>Post more.</span></h1>
   <p class="tagline">Your takes in. One clean cut out.</p>

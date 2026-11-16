@@ -32,6 +32,13 @@
   @keyframes print { from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-8px); } to { clip-path: inset(0); } }
 }
 
+/* Black Friday banner (spec 012): a dashed red frame around a short price list. */
+.sale { border: 2px dashed var(--cut); padding: 16px 16px 4px; margin: 0 0 28px; }
+.sale h2 { margin-top: 0; }
+.sale .meta { margin-bottom: 10px; }
+.sale s { color: var(--ink-faded); font-weight: 400; margin-right: 8px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 /* Steps: the order is the information, so the numbers print large. */
 .steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
 .steps li { counter-increment: step; display: grid; grid-template-columns: 2.4rem 1fr; column-gap: 8px; padding: 12px 0; border-bottom: 1px dashed var(--ink-faded); margin: 0; }
