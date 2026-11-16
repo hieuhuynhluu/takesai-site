@@ -85,6 +85,9 @@ footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono)
 
 /* ---- Marketing site skeleton (spec 007, contracts/site-interfaces.md) ---- */
 
+/* Support opened from the app (?from=app): nothing there may link to outside payment (guideline 3.1.1(a)). */
+.from-app .not-app, html:not(.from-app) .only-app { display: none; }
+
 /* Launch switch (FR-002). Release 1.0 ships without the trial, the web checkout and the affiliate
    program; they arrive together in the next release. When that release is live, swap these two lines. */
 .if-trial { display: none !important; }

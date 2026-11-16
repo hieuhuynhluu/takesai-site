@@ -6,6 +6,15 @@
   var TIKTOK_PIXEL_ID = 'DBSNPP3C77UCDH70LT8G'; // TikTok pixel "takesai.app" (TakesAI Business Center; AAM and enhanced postback off)
   var TOLT_PUBLIC_KEY = '';
 
+  // Pages the app opens (?from=app) hide the ways to buy outside the app for the rest of the visit: links to /earn/
+  // and /checkout/ carry class "not-app" (guideline 3.1.1(a); build decision "The app links a web plan to the cancel page").
+  var fromApp = new URLSearchParams(location.search).get('from') === 'app';
+  try {
+    if (fromApp) sessionStorage.setItem('takesai.from', 'app');
+    else fromApp = sessionStorage.getItem('takesai.from') === 'app';
+  } catch (e) {} // storage blocked: only the page opened with ?from=app is covered
+  if (fromApp) document.documentElement.classList.add('from-app');
+
   var KEY = 'takesai.optout';
   // data-track name -> Meta custom event (research R5)
   var EVENTS = { download: 'Download', affiliate_signup: 'AffiliateSignup', checkout_start: 'CheckoutStart' };
