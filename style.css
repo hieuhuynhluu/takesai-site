@@ -93,6 +93,11 @@ footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono)
 .if-trial { display: none !important; }
 /* .if-no-trial { display: none !important; } */
 
+/* Feature board switch (spec 015). Board copy carries .if-board, its counterpart .if-no-board.
+   When the board is switched on in the app, swap these two lines. */
+.if-board { display: none !important; }
+/* .if-no-board { display: none !important; } */
+
 /* Actions: one primary, one quiet. */
 .btn {
   display: inline-block;

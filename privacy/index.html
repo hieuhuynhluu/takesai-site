@@ -49,7 +49,7 @@
   <li>Your email address. You sign in with Apple, Google or a one-time code sent by email; we never ask for or store a password.</li>
   <li>The sign-in identifier Apple or Google gives us, and the account ID we create for you.</li>
   <li>If you sign in with Google: the name on your Google account, which the app shows on your profile, and the link to your Google profile photo, which we keep with your account but do not use.</li>
-  <li>Your profile, shown only to you in the app: a display name (the name Apple or Google gives us, or otherwise the part of your email address before the @, until you change it) and, if you add them, a handle and a profile photo. Handles are unique, so the app can tell someone else that a handle is taken, never whose it is. You take or choose the photo and crop it in the app; your phone shrinks it to a small square image before uploading it to private storage, with no public link. We do not analyse the photo in any way. Your name, handle and photo are not shared or used for ads.</li>
+  <li>Your profile, shown only to you in the app<span class="if-board"> (and your handle on our feature board, if you post there)</span>: a display name (the name Apple or Google gives us, or otherwise the part of your email address before the @, until you change it) and, if you add them, a handle and a profile photo. Handles are unique, so the app can tell someone else that a handle is taken, never whose it is. You take or choose the photo and crop it in the app; your phone shrinks it to a small square image before uploading it to private storage, with no public link. We do not analyse the photo in any way. <span class="if-no-board">Your name, handle and photo are not shared or used for ads.</span><span class="if-board">Your name and photo are not shared, and none of the three is used for ads.</span></li>
 </ul>
 
 <h3>Videos you send to be cut</h3>
@@ -94,6 +94,9 @@
 <h3>Problem reports</h3>
 <p>If you use Report a problem: the category you pick, what you write (up to 2,000 characters), your app version, iOS or Android and its version, the time, your account ID and, when you send it from the editor, which cut it is about. Reports never include your video, transcript, edits, phone model or IP address.</p>
 
+<h3 class="if-board">Feature board</h3>
+<p class="if-board">If you open Request a feature in the app, we send Featurebase, the service that runs our feature board at feedback.takesai.app, your account ID, your sign-in email and your handle (or "TakesAI creator" if you have none), so you are signed in without a second account. Anything you post, comment on or vote for on the board is public under that name once we approve it. Featurebase emails you when a request you follow changes, and each email lets you stop them. Featurebase sets cookies on the board to keep you signed in, and records its own analytics of visits to the board's pages. When you delete your TakesAI account, we delete your profile at Featurebase too; what you posted stays on the board without your name. To report a post, use Settings › Report a problem › A post on the feature board, or write to <a href="mailto:support@takesai.app">support@takesai.app</a>.</p>
+
 <h3>Usage data</h3>
 <p>Which features you use (named actions, such as sending a video or exporting a cut), your phone's operating system and version, device type and screen size, your app version, your answer to "How did you hear about us?", and your account ID. No location is worked out from your IP address. (Usage data sent before 16 November 2026 may hold an approximate location, country, region and city, until that profile is deleted.) This data never includes your name, email address, transcript text, file names or links to your files, and we do not record your screen.</p>
 
@@ -117,6 +120,7 @@
   <li>To make your cuts: transcribe the audio, decide what to remove, and send the result to your phone.</li>
   <li>To run your account, your profile and your subscription, count your edits and apply the fair-use limits in our <a href="../terms/#fair-use">Terms</a>.</li>
   <li>To tell you when a cut is ready, and to answer you when you contact us.</li>
+  <li class="if-board">To run the feature board: sign you in, show your requests, comments and votes, and email you about requests you follow.</li>
   <li>To find and fix bugs and understand which features are used, from usage data.</li>
   <li>To measure how our advertising performs, from visits to takesai.app (section 12).</li>
   <li class="if-trial">To take payment for plans bought on takesai.app, work out tax, and credit the affiliate or partner who referred you.</li>
@@ -161,6 +165,7 @@
   <li><span>Apple and Google</span><span>Sign-in, app store purchases and notification delivery</span></li>
   <li><span>Expo</span><span>Sends push notifications and delivers app updates</span></li>
   <li><span>PostHog</span><span>Usage data (United States)</span></li>
+  <li class="if-board"><span>Featurebase (CORDNET OÜ)</span><span>Runs our feature board at feedback.takesai.app; receives your account ID, sign-in email and handle when you open it, under a data processing agreement (European Union)</span></li>
   <li><span>Google ML Kit (Android)</span><span>Finds faces on your phone for Retouch. Sends Google technical diagnostics (device model, Android and app version, how fast it ran), never images or anything about faces</span></li>
   <li><span>Meta and TikTok</span><span>Ad measurement on the takesai.app website only (section 12)</span></li>
   <li class="if-trial"><span>Stripe</span><span>Takes payment and works out tax for plans bought on takesai.app (<a href="https://stripe.com/privacy">Stripe's privacy policy</a>)</span></li>
@@ -171,7 +176,7 @@
 
 <section id="where">
 <h2>6. Where your data is stored</h2>
-<p>Our servers are in the United States, and our providers process data mainly there, though some use subcontractors in other countries. If you use TakesAI from Canada, Australia or elsewhere, your information is processed in those countries, where courts, law enforcement and national security authorities may be able to access it.</p>
+<p>Our servers are in the United States, and our providers process data mainly there, though some use subcontractors in other countries.<span class="if-board"> Featurebase, which runs the feature board, stores its data in the European Union.</span> If you use TakesAI from Canada, Australia or elsewhere, your information is processed in those countries, where courts, law enforcement and national security authorities may be able to access it.</p>
 </section>
 
 <section id="retention">
@@ -187,6 +192,7 @@
   <li><span>Profile name, handle and photo</span><span>Until you change or remove them, or delete your account. A photo you replace or remove is deleted from our servers right away, or, if that fails, the next time you edit your profile.</span></li>
   <li><span>Server logs (IDs only, no transcript text)</span><span>30 days</span></li>
   <li><span>Usage data</span><span>12 months. The usage profile it is linked to (account ID, device details, "How did you hear about us?") until you delete your account</span></li>
+  <li class="if-board"><span>Feature board profile, posts, comments and votes at Featurebase</span><span>Your profile: until you delete your TakesAI account, when we delete it at Featurebase. What you posted stays on the board without your name.</span></li>
   <li><span>Problem reports</span><span>12 months after you send them, or with your account if you delete it sooner</span></li>
   <li><span>Website ad data at Meta and TikTok</span><span>Kept by them under their own policies. Their cookies stay in your browser until they expire or you clear them.</span></li>
   <li><span>Your privacy choice on takesai.app</span><span>In your browser, until you change it or clear the site's data</span></li>
@@ -206,7 +212,7 @@
 <p>Delete a cut in the Cuts library or in Settings → Storage. It is removed from your phone at once, and its audio, frame times, transcript, cut list and AI decision are deleted from our servers. If you are offline, the app finishes the server deletion the next time it can connect. A small job record with no audio or words stays so your daily limits keep counting, and an edit already used stays used.</p>
 
 <h3>Delete your account in the app</h3>
-<p>Go to <strong>You → Settings → Delete account</strong>. This deletes your account and everything we hold for it: your profile name, handle and photo, cuts, transcripts, audio, consent records, notification tokens and your plan and edit history. It also deletes the projects stored in the app on that phone, removes you from Superwall and PostHog, and revokes Sign in with Apple. Data on our servers is deleted right away; files of a cut that was still being made, or a photo that was still uploading, are removed within 24 hours. Copies at our AI vendors expire as described in section 4.</p>
+<p>Go to <strong>You → Settings → Delete account</strong>. This deletes your account and everything we hold for it: your profile name, handle and photo, cuts, transcripts, audio, consent records, notification tokens and your plan and edit history. It also deletes the projects stored in the app on that phone, removes you from Superwall and PostHog<span class="if-board">, deletes your profile at Featurebase (the feature board)</span>, and revokes Sign in with Apple. Data on our servers is deleted right away; files of a cut that was still being made, or a photo that was still uploading, are removed within 24 hours. Copies at our AI vendors expire as described in section 4.</p>
 <p><strong>Deleting your account does not cancel your subscription.</strong> Cancel it in the App Store or Google Play first (see <a href="../support/#cancel">Support</a>). Apple and Google keep their own purchase records under their own policies.</p>
 <p class="if-trial"><strong>If you bought your plan on takesai.app,</strong> deleting your account cancels it at once, with no refund for the time left. After deletion we keep only the purchase records that tax and accounting law requires (section 7), no longer linked to you, and Stripe keeps its own payment records under its own policy.</p>
 
