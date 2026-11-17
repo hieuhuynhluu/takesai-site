@@ -90,8 +90,8 @@ footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono)
 
 /* Launch switch (FR-002). Release 1.0 ships without the trial, the web checkout and the affiliate
    program; they arrive together in the next release. When that release is live, swap these two lines. */
-.if-trial { display: none !important; }
-/* .if-no-trial { display: none !important; } */
+/* .if-trial { display: none !important; } */
+.if-no-trial { display: none !important; }
 
 /* Feature board switch (spec 015). Board copy carries .if-board, its counterpart .if-no-board.
    When the board is switched on in the app, swap these two lines. */

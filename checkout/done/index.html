@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<title>Thank you · TakesAI</title>
+<meta name="description" content="Your TakesAI order went through. Get the app and sign in to start cutting.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="../checkout.css">
+<!-- checkout.js first: it removes ?session_id from the URL before site.js loads the pixels (contract section 3). -->
+<script src="../checkout.js" defer></script>
+<script src="../../assets/site.js" defer></script>
+</head>
+<body class="checkout">
+<main class="strip">
+<nav aria-label="Main"><a class="brand" href="../../"><img src="../../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../../support/">Support</a></span></nav>
+
+<h1 id="done-h">Thank you</h1>
+<p class="lede" id="done-lede" role="status">Your order went through. Get the app, sign in, and your plan is there.</p>
+
+<section aria-labelledby="next-h">
+<h2 id="next-h">Next steps</h2>
+<ol class="steps">
+  <li>
+    <h3>Download TakesAI</h3>
+    <p>It's in beta: TestFlight on iPhone, a Google Play test on Android.</p>
+    <a class="btn btn-cut" id="download" href="../../beta/" data-track="download">Get the beta app</a>
+  </li>
+  <li>
+    <h3>Sign in</h3>
+    <p>Use the same email you used at checkout. If you already had a TakesAI account with that email, your plan is there. If you didn't, email <a href="mailto:support@takesai.app">support@takesai.app</a> from that address and we'll attach it.</p>
+  </li>
+  <li id="redeem" hidden>
+    <h3>Link your plan</h3>
+    <p id="redeem-wait" role="status">Confirming your purchase. This takes a few seconds.</p>
+    <div id="redeem-ready" hidden>
+      <p><a class="btn btn-cut" id="open">Open TakesAI</a></p>
+      <p>Or email this code to <a href="mailto:support@takesai.app">support@takesai.app</a>, and we'll attach your plan.</p>
+      <p class="redeem-code" id="redeem-code"></p>
+    </div>
+  </li>
+</ol>
+</section>
+
+<section aria-labelledby="receipt-h">
+<h2 id="receipt-h">Your receipt</h2>
+<p>Stripe, our payment processor, emails your receipt to the address you used at checkout.</p>
+<p>To cancel, go to <a href="../../cancel/">takesai.app/cancel</a> or use the link in that email. You keep your plan until the period you paid for ends, and if you cancel during a free trial you aren't charged. More in <a href="../../support/#web">Support</a>.</p>
+</section>
+</main>
+<footer class="site-footer">
+  <a href="../../privacy/">Privacy</a> · <a href="../../terms/">Terms</a> · <a href="../../support/">Support</a><span class="if-trial not-app"> · <a href="../../earn/">Earn with TakesAI</a></span> · <a href="../../privacy-choices/">Your privacy choices</a>
+</footer>
+</body>
+</html>

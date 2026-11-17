@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<title>Add your plan to TakesAI</title>
+<meta name="description" content="You bought TakesAI on takesai.app. Here's how to add the plan to the app.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="stylesheet" href="../style.css">
+<!-- No site.js, so no pixels or Tolt: the URL carries the redeem token (contract section 3). No referrer either,
+     so a click to another page here can't hand the token to that page's pixels. -->
+<meta name="referrer" content="no-referrer">
+</head>
+<body>
+<main class="strip">
+<nav><a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../support/">Support</a></span></nav>
+
+<h1>Add your plan to TakesAI</h1>
+<p class="lede">You bought TakesAI on takesai.app. Three steps put the plan on your account in the app.</p>
+
+<ol>
+  <li><strong>Install TakesAI</strong> on your iPhone or Android phone. <a class="btn" href="../beta/">Get the beta app</a></li>
+  <li><strong>Open it and sign in</strong> (or create your account).</li>
+  <li><strong>Check your plan.</strong> If your TakesAI account already used this email before you bought, the plan is there. If not, email <a href="mailto:support@takesai.app">support@takesai.app</a> from the address you bought with, with your code below, and we'll attach it.</li>
+</ol>
+
+<section id="code-box" hidden>
+  <h2>Your code</h2>
+  <ul class="lines"><li class="total"><span>Code</span><span id="code"></span></li></ul>
+  <p>It works once, for one account.</p>
+</section>
+<noscript><p>Your code is also in the email from your purchase.</p></noscript>
+
+<p>Something not working? <a href="../support/">Contact support</a> with the email address you bought with.</p>
+</main>
+<footer class="site-footer">
+  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+</footer>
+<script>
+  // Shows the 6-character code from ?c=; anything else is ignored.
+  var c = new URLSearchParams(location.search).get('c') || '';
+  if (/^[A-Z0-9]{6}$/i.test(c)) {
+    document.getElementById('code').textContent = c.toUpperCase();
+    document.getElementById('code-box').hidden = false;
+  }
+</script>
+</body>
+</html>

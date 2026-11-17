@@ -1,0 +1,115 @@
+/* Checkout pages only (spec 007, T7). Shared look lives in ../style.css. */
+::selection { background: var(--ink); color: var(--paper); }
+/* A receipt-sized strip; native controls stay light on the paper when the page around it is dark. */
+.checkout .strip { max-width: 34rem; color-scheme: light; }
+.checkout .site-footer { max-width: 34rem; }
+.checkout nav { margin-bottom: 14px; }
+.checkout nav .links a { padding: 8px 0; } /* taller tap target */
+/* One line at 375 px; wraps at 320. */
+.checkout h1 { font-size: clamp(1rem, 4.8vw, 1.5rem); margin-bottom: 10px; }
+/* Phones: the strip feeds from the top edge of the screen, so the plan, price and button sit higher. */
+@media (max-width: 599px) { body.checkout { padding-top: 0; } .checkout .strip { padding-top: 18px; } .checkout nav { margin-bottom: 10px; } }
+[hidden] { display: none !important; } /* rules below set display; hidden must still win */
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+
+/* Labels and fields */
+.field { display: block; font: 700 0.7rem/1.5 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 6px; }
+.field small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--ink-faded); }
+.checkout input[type="text"], .checkout input[type="email"] {
+  display: block; width: 100%; min-height: 44px; padding: 10px 12px;
+  font: 400 1rem/1.4 var(--mono); /* 16px: iOS doesn't zoom on focus */
+  color: var(--ink); background: transparent; caret-color: var(--cut);
+  border: 2px solid var(--ink); border-radius: 0;
+}
+.checkout input::placeholder { color: var(--ink-faded); }
+.checkout input:focus-visible { outline: 2px solid var(--cut); outline-offset: 2px; }
+#code { text-transform: uppercase; } /* codes are case-insensitive; the value stays as typed */
+
+/* "Have a code?": a native disclosure, keyboard-ready without script. */
+.code { margin: 0 0 10px; }
+.code summary { display: inline-flex; gap: 8px; padding: 8px 0; cursor: pointer; list-style: none; font: 700 0.75rem/1.5 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; text-decoration: underline; text-underline-offset: 3px; }
+.code summary::-webkit-details-marker { display: none; }
+.code summary::after { content: "+"; text-decoration: none; }
+.code[open] summary::after { content: "−"; color: var(--cut); }
+.code summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.code[open] { padding-bottom: 6px; }
+
+/* Billing period: two radios printed as a segmented strip; the chosen one prints reversed. */
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--ink); margin-bottom: 4px; }
+.seg label { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 44px; padding: 5px 8px; text-align: center; cursor: pointer; font: 700 0.75rem/1.25 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+.seg label + label { border-left: 2px solid var(--ink); }
+.seg small { font: 400 0.65rem/1.3 var(--mono); letter-spacing: 0.02em; }
+.seg input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.seg label:has(:checked) { background: var(--ink); color: var(--paper); }
+.seg:has(:focus-visible) { outline: 2px solid var(--cut); outline-offset: 3px; }
+
+/* Plans: receipt line items; the selected line prints reversed (foundation, Line item). */
+.plans { margin-bottom: 14px; }
+.plan { display: grid; grid-template-columns: auto 1fr auto; column-gap: 10px; align-items: baseline; padding: 9px 10px; border-bottom: 1px dashed var(--ink-faded); cursor: pointer; }
+.plan input { appearance: none; -webkit-appearance: none; color: inherit; width: 14px; height: 14px; margin: 0; align-self: center; border: 2px solid currentColor; border-radius: 50%; }
+.plan input:checked { background: radial-gradient(currentColor 0 3px, transparent 3.5px); }
+.plan .name { font: 800 0.85rem/1.3 var(--mono); font-stretch: 112.5%; text-transform: uppercase; letter-spacing: 0.06em; }
+.plan .price { grid-row: span 2; text-align: right; font: 700 1rem/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.plan .price small { display: block; font: 400 0.62rem/1.4 var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+.plan .what { grid-column: 2; margin-top: 1px; font-size: 0.8rem; line-height: 1.4; color: var(--ink-faded); }
+@media (max-width: 359px) { .plan .price { grid-row: auto; } .plan .what { grid-column: 2 / -1; } }
+.plan:has(:checked) { background: var(--ink); color: var(--paper); border-bottom-color: var(--ink); }
+.plan:has(:checked) .what { color: #C9C9C3; } /* faded paper on ink, 11:1 */
+.plan:has(:focus-visible) { outline: 2px solid var(--cut); outline-offset: 2px; }
+.plan input:focus-visible { outline: none; }
+/* The period switch, without script. */
+.plans .y, #checkout:has([name="period"][value="yearly"]:checked) .plans .m { display: none; }
+#checkout:has([name="period"][value="yearly"]:checked) .plans .y { display: inline; }
+
+/* Order: trial line item, then the total printed as the price sentence. */
+.order .lines { margin: 8px 0 12px; }
+.lines li.due { display: block; font: 400 0.95rem/1.5 var(--sans); padding-top: 12px; }
+.due strong { display: block; margin-bottom: 2px; font: 800 1.5rem/1.15 var(--mono); font-stretch: 112.5%; text-transform: uppercase; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+
+/* The button; .btn and .btn-cut come from style.css. */
+.checkout .order .btn, .checkout .soon .btn { display: block; width: 100%; padding: 17px 12px; text-align: center; line-height: 1.3; }
+button.btn { cursor: pointer; border-radius: 0; -webkit-appearance: none; appearance: none; }
+button.btn:disabled { cursor: wait; opacity: 0.65; }
+.soon { border: 2px dashed var(--ink); padding: 14px; }
+.soon p { margin: 0 0 12px; font: 700 0.8rem/1.5 var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Errors: what happened and the way on. */
+.msg:empty { display: none; }
+.msg { margin-top: 14px; padding: 14px; border: 2px solid var(--cut); }
+.msg p { margin: 0; font-weight: 600; }
+.msg .btn { display: block; margin-top: 12px; text-align: center; line-height: 1.3; width: 100%; }
+
+.consent { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; font-size: 0.9rem; line-height: 1.4; }
+.consent input { margin-top: 3px; }
+.fine { list-style: none; padding: 0; margin: 20px 0 0; font-size: 0.8rem; line-height: 1.5; color: var(--ink-faded); }
+.fine li { margin: 0 0 4px; }
+
+/* Motion law: the total reprints, feeding down from the printer edge, whenever the order changes. */
+@media (prefers-reduced-motion: no-preference) {
+  .due.print { animation: print 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-6px); } to { clip-path: inset(0 0 -10px 0); transform: none; } }
+}
+
+/* Done page: the order of the steps is the information, so the numbers print large. */
+.lede { margin-bottom: 8px; }
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.2rem 1fr; column-gap: 8px; padding: 14px 0; margin: 0; }
+.steps > li + li { border-top: 1px dashed var(--ink-faded); } /* top rules, so a hidden last step leaves no stray rule */
+.steps > li::before { content: counter(step); grid-row: 1 / span 4; font: 800 1.5rem/1 var(--mono); }
+.steps > li > * { grid-column: 2; }
+.steps h3 { margin: 0 0 6px; }
+.steps p { margin: 0 0 10px; }
+.steps .btn { text-align: center; line-height: 1.3; }
+.redeem-code { font: 800 1.6rem/1.2 var(--mono); font-stretch: 112.5%; letter-spacing: 0.24em; font-variant-numeric: tabular-nums; user-select: all; }
+@media (max-width: 599px) { .steps .btn { display: block; width: 100%; } }
+
+/* Black Friday (spec 012): the note with its countdown, and the crossed-out regular yearly prices. */
+.sale-note { border: 2px dashed var(--cut); padding: 10px 12px; margin: 0 0 14px; font-size: 0.9rem; }
+.sale-note #countdown { display: block; font: 700 0.8rem/1.5 var(--mono); font-variant-numeric: tabular-nums; color: var(--cut); }
+.plan .y s { color: var(--ink-faded); font-weight: 400; }
+.plan:has(:checked) .y s { color: #C9C9C3; }
+/* During the sale the price line is longer, so it sits under the plan name instead of beside it. */
+.sale-on .plan .price { grid-column: 2 / -1; grid-row: auto; text-align: left; }
+.sale-y .trial-only, .sale-only { display: none; }
+.sale-y .sale-only { display: list-item; }

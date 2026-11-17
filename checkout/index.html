@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<title>Start your TakesAI trial</title>
+<meta name="description" content="Pick a TakesAI plan and start your free trial: $0 today, then the plan's price unless you cancel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="checkout.css">
+<script src="../assets/site.js" defer></script>
+<script src="checkout.js" defer></script>
+</head>
+<body class="checkout">
+<main class="strip">
+<nav aria-label="Main"><a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../#plans">Plans</a> <a href="../support/">Support</a></span></nav>
+
+<h1>Start your free trial</h1>
+
+<form id="checkout">
+  <details class="code" id="code-box">
+    <summary>Have a code?</summary>
+    <label class="field" for="code">Partner or affiliate code</label>
+    <input id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40">
+  </details>
+
+  <!-- Black Friday (spec 012): shown by checkout.js only while SALE is on and inside the sale's times. -->
+  <p class="sale-note" id="sale-note" hidden><strong>Black Friday: 50% off your first year</strong> on yearly plans. <span id="countdown" role="timer"></span></p>
+
+  <fieldset class="seg">
+    <legend class="vh">Billing period</legend>
+    <label><input type="radio" name="period" value="monthly" checked>Monthly</label>
+    <label><input type="radio" name="period" value="yearly">Yearly <small>About 33% less</small></label>
+  </fieldset>
+
+  <!-- Prices match the App Store (docs/store-setup.md; checkout-api.md server rule 1). The period switch is CSS only, so prices read right without JavaScript. -->
+  <fieldset class="plans">
+    <legend class="vh">Plan</legend>
+    <label class="plan"><input type="radio" name="plan" value="starter">
+      <b class="name">Starter</b>
+      <span class="price"><span class="m"><b>$19.99</b> <small>a month</small></span><span class="y"><b>$159.99</b> <small>a year</small></span></span>
+      <span class="what">100 edits a month</span>
+    </label>
+    <label class="plan"><input type="radio" name="plan" value="pro" checked>
+      <b class="name">Pro</b>
+      <span class="price"><span class="m"><b>$49.99</b> <small>a month</small></span><span class="y"><b>$399.99</b> <small>a year</small></span></span>
+      <span class="what">300 edits a month, plus batch and overlap audio</span>
+    </label>
+    <label class="plan"><input type="radio" name="plan" value="ultimate">
+      <b class="name">Ultimate</b>
+      <span class="price"><span class="m"><b>$89.99</b> <small>a month</small></span><span class="y"><b>$719.99</b> <small>a year</small></span></span>
+      <span class="what">Unlimited edits, plus batch and overlap audio</span>
+    </label>
+  </fieldset>
+
+  <!-- Shown by checkout.js: the trial date and the button need JavaScript. -->
+  <div class="order" id="order" hidden>
+    <!-- No email field: Stripe Checkout asks for it on the next page (keeps the button on the first phone screen, SC-001). -->
+
+    <ul class="lines">
+      <li><span id="trial-label">Free trial</span><span id="trial-days">3 days</span></li>
+      <li class="total due" id="due" aria-live="polite"><strong id="due-now">$0 today.</strong> <span id="due-then"></span></li>
+    </ul>
+
+    <label class="consent" id="consent" hidden><input type="checkbox" name="renews" required> I understand my plan renews automatically until I cancel.</label>
+    <button class="btn btn-cut" id="start" type="submit" data-track="checkout_start" disabled hidden>Start free trial</button>
+    <div class="soon" id="soon" hidden>
+      <p>Web checkout opens soon.</p>
+      <a class="btn btn-cut" href="../beta/" data-track="download">Get the TakesAI beta</a>
+    </div>
+    <div class="msg" id="msg" role="alert"></div>
+  </div>
+
+  <noscript>
+    <div class="soon">
+      <p>Checkout needs JavaScript. Turn it on and reload this page, or get the app instead.</p>
+      <a class="btn btn-cut" href="../beta/" data-track="download">Get the TakesAI beta</a>
+    </div>
+  </noscript>
+</form>
+
+<ul class="fine">
+  <li class="trial-only">One free trial per person.</li>
+  <li class="trial-only">A card is required to start. You aren't charged until the trial ends.</li>
+  <li class="sale-only">Black Friday prices are for your first year on a yearly plan, paid today, with no free trial. Then the regular yearly price.</li>
+  <li>Cancel online anytime at <a href="../cancel/">takesai.app/cancel</a>. You keep your plan until the period you paid for ends.</li>
+  <li>Prices can change: we email you 30 days before.</li>
+  <li>Plans bought here follow our <a href="../terms/#web-purchases">Terms of Use</a>.</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+</footer>
+</body>
+</html>

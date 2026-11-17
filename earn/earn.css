@@ -1,0 +1,35 @@
+/* Earn page (spec 007, T020). Builds on ../style.css; scoped to body.earn so it changes no other page. */
+::selection { background: var(--ink); color: var(--paper); }
+.earn nav .links a { padding: 8px 0; } /* taller tap target */
+.earn .lines { font-variant-numeric: tabular-nums; }
+
+/* Hero: the offer in one glance, then the one action. */
+.hero h1 { font-size: clamp(1.8rem, 8.5vw, 3.2rem); line-height: 1.05; letter-spacing: 0.01em; margin-bottom: 14px; text-wrap: balance; }
+.hero .lede { max-width: 34em; }
+.offer { margin-bottom: 20px; }
+.offer li span:last-child { font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+.actions .btn { line-height: 1.3; text-align: center; flex: 1 1 auto; }
+@media (min-width: 600px) { .actions .btn { flex: 0 0 auto; } }
+.fine { font: 400 0.75rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Worked example: a receipt with its own label; one rule above a total, not two. */
+#earn .meta { margin-bottom: 4px; }
+
+/* How it works: the sequence is the content, so the numbers stay. */
+.steps { padding-left: 1.6em; }
+.steps li { margin-bottom: 14px; }
+.steps li::marker { font: 800 0.85rem var(--mono); }
+.steps h3 { margin: 0 0 4px; }
+.steps p { margin: 0; }
+
+/* Rules: what stays in a post, and what is cut (red means cut, docs/design/foundation.md). */
+.marks { list-style: none; padding: 0; margin: 0 0 16px; font: 400 0.8rem/1.5 var(--mono); }
+.marks li { position: relative; margin: 0; padding: 8px 0 8px 1.6em; border-bottom: 1px dashed var(--ink-faded); }
+.marks li::before { position: absolute; left: 0; font-weight: 800; }
+.keep li::before { content: "+" / ""; }
+.cut li { color: var(--cut); }
+.cut li::before { content: "\2212" / ""; }
+
+.faq h3 { margin-top: 18px; }
+.faq h3:first-child { margin-top: 0; }

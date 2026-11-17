@@ -4,7 +4,7 @@
   'use strict';
   var META_PIXEL_ID = '4650942875177564'; // Meta dataset "takesai.app" in the Takesai business portfolio
   var TIKTOK_PIXEL_ID = 'DBSNPP3C77UCDH70LT8G'; // TikTok pixel "takesai.app" (TakesAI Business Center; AAM and enhanced postback off)
-  var TOLT_PUBLIC_KEY = '';
+  var TOLT_PUBLIC_KEY = 'pk_CUrZedEBgvsoNZcikqPqnYPs';
 
   // Pages the app opens (?from=app) hide the ways to buy outside the app for the rest of the visit: links to /earn/
   // and /checkout/ carry class "not-app" (guideline 3.1.1(a); build decision "The app links a web plan to the cancel page").
