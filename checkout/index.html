@@ -22,12 +22,6 @@
 <h1>Start your free trial</h1>
 
 <form id="checkout">
-  <details class="code" id="code-box">
-    <summary>Have a code?</summary>
-    <label class="field" for="code">Partner or affiliate code</label>
-    <input id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40">
-  </details>
-
   <!-- Black Friday (spec 012): shown by checkout.js only while SALE is on and inside the sale's times. -->
   <p class="sale-note" id="sale-note" hidden><strong>Black Friday: 50% off your first year</strong> on yearly plans. <span id="countdown" role="timer"></span></p>
 
@@ -60,6 +54,16 @@
   <!-- Shown by checkout.js: the trial date and the button need JavaScript. -->
   <div class="order" id="order" hidden>
     <!-- No email field: Stripe Checkout asks for it on the next page (keeps the button on the first phone screen, SC-001). -->
+
+    <!-- The code sits right above the total and the button, with its own Apply, so nobody reaches Stripe without it (founder, 2026-11-17). -->
+    <div class="code" id="code-row">
+      <label class="field" for="code">Creator or partner code <small>(optional)</small></label>
+      <div class="code-in">
+        <input id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" enterkeyhint="done">
+        <button type="button" class="apply" id="apply">Apply</button>
+      </div>
+      <p class="code-msg" id="code-msg" role="status" aria-live="polite"></p>
+    </div>
 
     <ul class="lines">
       <li><span id="trial-label">Free trial</span><span id="trial-days">3 days</span></li>

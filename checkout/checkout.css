@@ -26,14 +26,19 @@ fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .checkout input:focus-visible { outline: 2px solid var(--cut); outline-offset: 2px; }
 #code { text-transform: uppercase; } /* codes are case-insensitive; the value stays as typed */
 
-/* "Have a code?": a native disclosure, keyboard-ready without script. */
-.code { margin: 0 0 10px; }
-.code summary { display: inline-flex; gap: 8px; padding: 8px 0; cursor: pointer; list-style: none; font: 700 0.75rem/1.5 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; text-decoration: underline; text-underline-offset: 3px; }
-.code summary::-webkit-details-marker { display: none; }
-.code summary::after { content: "+"; text-decoration: none; }
-.code[open] summary::after { content: "−"; color: var(--cut); }
-.code summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.code[open] { padding-bottom: 6px; }
+/* The code, beside the total and the button: one field with its Apply inside the same box. */
+.code { margin: 4px 0 14px; }
+.code-in { display: flex; border: 2px solid var(--ink); }
+.checkout .code-in input[type="text"] { border: 0; min-width: 0; flex: 1; }
+.code-in:focus-within { outline: 2px solid var(--cut); outline-offset: 2px; }
+.checkout .code-in input:focus-visible { outline: 0; }
+.apply { flex: none; min-height: 44px; padding: 0 16px; border: 0; border-left: 2px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; font: 700 0.75rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.apply:disabled { background: var(--paper); color: var(--ink-faded); cursor: default; }
+.apply:focus-visible { outline: 2px solid var(--cut); outline-offset: -4px; }
+.code-msg { margin: 6px 0 0; font: 400 0.85rem/1.4 var(--sans); min-height: 0; }
+.code-msg:empty { display: none; }
+.code-msg.ok::before { content: "✓ "; font-weight: 700; }
+.code-msg.bad { color: var(--cut); }
 
 /* Billing period: two radios printed as a segmented strip; the chosen one prints reversed. */
 .seg { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--ink); margin-bottom: 4px; }

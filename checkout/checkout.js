@@ -6,6 +6,9 @@
 const CHECKOUT_BASE = "https://beoxhscgtofgsizqzixz.supabase.co/functions/v1";
 const CHECKOUT_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/create-checkout";
 const STATUS_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/checkout-status";
+// GET ?code= -> { ok: true, trial_days, trial_edits } or { ok: false, error: "bad_code" }. A 404 (not deployed) or a
+// network error leaves the code for create-checkout to check, as before.
+const CHECK_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/check-code";
 // Until 1.0.0 is on the App Store, the fallback goes to the beta page (M-84); at release: "https://apps.apple.com/app/id6833252992".
 const APP_STORE = "/beta/";
 // Black Friday 2026 (spec 012, contract v4): while the server's SALE_BF2026 is on, inside these times, a yearly checkout
@@ -24,13 +27,14 @@ if ($("checkout")) checkoutPage();
 if ($("redeem")) donePage();
 
 function checkoutPage() {
-  const form = $("checkout"), start = $("start"), msg = $("msg"), code = $("code");
+  const form = $("checkout"), start = $("start"), msg = $("msg"), code = $("code"), applyBtn = $("apply"), codeMsg = $("code-msg");
   // ?trial=0 is the reused-trial email's link (contract section 5): the plan without a trial.
   let busy = false, noTrial = params.get("trial") === "0", shown = "";
+  let applied = null; // the code as last applied: { code, days, edits }, or { code, unverified: true } when it can't be checked here
 
   // ?plan= and ?period= preselect; a value matching no radio leaves the default checked.
   for (const name of ["plan", "period"]) if (params.get(name)) form.elements[name].value = params.get(name);
-  if (params.get("code")) { code.value = params.get("code").trim(); $("code-box").open = true; }
+  if (params.get("code")) code.value = params.get("code").trim();
   const sale = saleNow();
   if (sale) startSale(form);
   // Tolt's script (loaded by site.js) sets window.tolt_referral from ?ref=; the raw ?ref= covers a blocked script.
@@ -42,7 +46,6 @@ function checkoutPage() {
     const yearly = pick("period") === "yearly";
     const price = row.querySelector(yearly ? ".y b" : ".m b").textContent;
     const per = yearly ? "a year" : "a month";
-    const typed = code.value.trim();
     const saleYearly = sale && yearly;
     let days, now = "$0 today.", then;
     if (saleYearly) { // the sale price wins over a code's or link's trial (decision 12)
@@ -54,7 +57,10 @@ function checkoutPage() {
       days = "Already used";
       now = `${price} today.`;
       then = `Renews at ${price} ${per} plus any tax until you cancel.`;
-    } else if (typed) {
+    } else if (applied && applied.days) {
+      days = `${applied.days} days`;
+      then = `Then ${price} ${per} plus any tax from ${dateIn(applied.days)}, renewing until you cancel. Cancel before then and you pay nothing.`;
+    } else if (applied) {
       days = "Set by your code";
       then = `Your code's trial (7, 14 or 30 days) is applied at checkout. Then ${price} ${per} plus any tax, renewing until you cancel. Cancel before the trial ends and you pay nothing.`;
     } else {
@@ -62,13 +68,13 @@ function checkoutPage() {
       days = `${n} days`;
       then = `Then ${price} ${per} plus any tax from ${dateIn(n)}, renewing until you cancel. Cancel before then and you pay nothing.`;
     }
-    $("trial-label").textContent = saleYearly ? "Black Friday" : "Free trial";
+    $("trial-label").textContent = saleYearly ? "Black Friday" : applied && applied.days ? `Free trial · ${applied.code.toUpperCase()}` : "Free trial";
     if (sale) document.querySelector("h1").textContent = document.title = saleYearly || noTrial ? "Subscribe to TakesAI" : "Start your free trial";
     $("trial-days").textContent = days;
     document.body.classList.toggle("sale-y", saleYearly);
     $("due-now").textContent = now;
     $("due-then").textContent = then;
-    if (!busy) start.textContent = noTrial || saleYearly ? "Subscribe" : "Start free trial";
+    if (!busy) start.textContent = cta();
     if (now + then !== shown) { // reprint the total only when it changed
       shown = now + then;
       const due = $("due");
@@ -80,7 +86,53 @@ function checkoutPage() {
     busy = on;
     start.disabled = on;
     start.setAttribute("aria-busy", on);
-    start.textContent = on ? "Opening checkout…" : noTrial || (sale && pick("period") === "yearly") ? "Subscribe" : "Start free trial";
+    start.textContent = on ? "Opening checkout…" : cta();
+  }
+
+  // The button says what starts: "Start 30-day free trial", or Subscribe when there's no trial.
+  function cta() {
+    if (noTrial || (sale && pick("period") === "yearly")) return "Subscribe";
+    const n = applied ? applied.days : referral() ? 7 : 3;
+    return n ? `Start ${n}-day free trial` : "Start free trial";
+  }
+
+  function note(text, kind) {
+    codeMsg.textContent = text;
+    codeMsg.className = "code-msg" + (kind ? " " + kind : "");
+  }
+
+  // Apply: checks the code with the server and shows what it gives before anyone leaves for Stripe.
+  async function applyCode() {
+    const typed = code.value.trim();
+    if (!typed) { applied = null; note(""); render(); return false; }
+    applyBtn.disabled = true;
+    applyBtn.textContent = "Checking…";
+    let ok = false;
+    try {
+      if (!CHECK_ENDPOINT) throw new Error("no endpoint");
+      const r = await fetch(`${CHECK_ENDPOINT}?code=${encodeURIComponent(typed)}`);
+      if (r.status === 404 || r.status >= 500) throw new Error("unavailable");
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok && d.trial_days > 0) {
+        applied = { code: typed, days: d.trial_days, edits: d.trial_edits };
+        note(`${typed.toUpperCase()} applied: ${d.trial_days} days free` + (d.trial_edits ? `, up to ${d.trial_edits} edits during the trial.` : "."), "ok");
+        ok = true;
+      } else if (r.status === 429) {
+        applied = null;
+        note("Too many tries in a row. Wait a minute, then apply it again.", "bad");
+      } else {
+        applied = null;
+        note(`We don't recognize ${typed.toUpperCase()}. Check the code, or leave it empty.`, "bad");
+      }
+    } catch {
+      applied = { code: typed, unverified: true }; // create-checkout still checks it
+      note(`${typed.toUpperCase()} will be checked on the next page.`, "ok");
+      ok = true;
+    }
+    applyBtn.disabled = false;
+    applyBtn.textContent = "Apply";
+    render();
+    return ok;
   }
 
   // One message at a time: what happened, then at most one way on (a function to run, or a link).
@@ -100,7 +152,14 @@ function checkoutPage() {
 
   const edited = () => { msg.replaceChildren(); render(); };
   form.addEventListener("change", edited);
-  code.addEventListener("input", edited);
+  code.addEventListener("input", () => {
+    const typed = code.value.trim();
+    if (applied && typed.toLowerCase() !== applied.code.toLowerCase()) applied = null;
+    if (!applied) note(typed ? "Tap Apply to use this code." : "");
+    edited();
+  });
+  code.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); applyCode(); } });
+  applyBtn.addEventListener("click", applyCode);
   addEventListener("load", render); // Tolt's async script may set tolt_referral after this file runs
   addEventListener("pageshow", (e) => { if (e.persisted) setBusy(false); }); // back from Stripe: button usable again
 
@@ -118,7 +177,11 @@ function checkoutPage() {
       event_id: (t && t.lastEventId) || newId(),
     };
     const typed = code.value.trim(), ref = referral(); // no email: Stripe Checkout collects it
-    if (typed) body.code = typed;
+    if (typed && !applied) { // typed but never applied: apply it and show what it gives; the next tap goes on
+      if (await applyCode()) note(codeMsg.textContent + " Check your trial, then tap the button again.", "ok");
+      return;
+    }
+    if (applied) body.code = applied.code;
     if (ref) body.referral = ref;
     if (noTrial) body.trial = false; // after 409 trial_used: the plan without a trial (the App shell must accept this field)
     msg.replaceChildren();
@@ -140,7 +203,8 @@ function checkoutPage() {
     if (error === "bad_code") {
       say(`We don't recognize the code ${typed.toUpperCase()}. Check it, or continue without a code.`, "Continue without a code", () => {
         code.value = "";
-        $("code-box").open = false;
+        applied = null;
+        note("");
         edited();
         form.requestSubmit();
       });
@@ -161,6 +225,7 @@ function checkoutPage() {
 
   render();
   $("order").hidden = false;
+  if (code.value) applyCode(); // a ?code= link applies itself
   if (CHECKOUT_ENDPOINT) { start.hidden = false; start.disabled = false; $("consent").hidden = false; } else $("soon").hidden = false;
 }
 
