@@ -260,12 +260,16 @@
 .styles button[aria-checked="true"], .chips button[aria-pressed="true"] { background: var(--text); color: var(--bg); box-shadow: none; }
 /* Batch: twenty real takes turn ready, one by one. */
 .grid20 { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
-.grid20 i { position: relative; aspect-ratio: 9 / 14; border-radius: 5px; background: #000 center / cover; box-shadow: inset 0 0 0 1px var(--line); filter: grayscale(1) brightness(0.45); }
+.grid20 i { position: relative; aspect-ratio: 9 / 14; border-radius: 5px; background: #000 center / cover; /* frames load when the tile reveals */ box-shadow: inset 0 0 0 1px var(--line); filter: grayscale(1) brightness(0.45); }
 @media (prefers-reduced-motion: no-preference) {
   .grid20 i { animation: ready20 7s var(--ease) infinite; animation-delay: calc(var(--i) * 0.14s); }
   @keyframes ready20 { 0%, 8% { filter: grayscale(1) brightness(0.45); opacity: 1; } 20%, 86% { filter: none; opacity: 1; } 100% { filter: grayscale(1) brightness(0.45); } }
 }
 @media (prefers-reduced-motion: reduce) { .grid20 i { filter: none; } }
+.in .grid20 i:nth-child(4n+1) { background-image: url(frame-50.webp); } .in .grid20 i:nth-child(4n+2) { background-image: url(frame-70.webp); }
+.in .grid20 i:nth-child(4n+3) { background-image: url(frame-160.webp); } .in .grid20 i:nth-child(4n) { background-image: url(frame-230.webp); }
+/* The looping demos rest while off screen (home.js marks the visible ones .live). */
+.js .viz:not(.live) *, .js .viz:not(.live) *::before, .js .viz:not(.live) *::after { animation-play-state: paused; }
 .g-k { margin: 12px 0 0; font-size: 13px; color: var(--text-3); }
 /* Editor: the app's own editor, its timeline and tools. */
 .ed-ui { border-radius: 16px; overflow: hidden; background: #fff; box-shadow: inset 0 0 0 1px var(--line-2), 0 24px 48px -24px rgb(0 0 0 / 0.5); transition: transform 0.6s var(--ease); }

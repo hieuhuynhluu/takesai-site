@@ -4,9 +4,7 @@
   var root = document.documentElement, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (id) { return document.getElementById(id); };
 
-  // Load choreography once fonts are in (or after 600 ms at most).
-  var go = function () { root.classList.add('ready'); };
-  (document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 600); })]) : Promise.resolve()).then(function () { requestAnimationFrame(go); });
+  // The hero's entrance starts from the inline script in index.html's head, so it doesn't wait for this file.
 
   // Nav: glass once the page moves.
   var nav = $('nav'), onScroll = function () { nav.classList.toggle('scrolled', scrollY > 8); };
@@ -21,13 +19,17 @@
   var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -5% 0px' });
   document.querySelectorAll('[data-r]').forEach(function (el) { io.observe(el); });
 
+  // The looping demos rest while off screen (home.css pauses a .viz that isn't .live).
+  var live = new IntersectionObserver(function (es) { es.forEach(function (e) { e.target.classList.toggle('live', e.isIntersecting); }); });
+  document.querySelectorAll('.viz').forEach(function (el) { live.observe(el); });
+
   // Pointer spotlight.
   document.querySelectorAll('.spot').forEach(function (el) {
     el.addEventListener('pointermove', function (e) { var r = el.getBoundingClientRect(); el.style.setProperty('--mx', (e.clientX - r.left) + 'px'); el.style.setProperty('--my', (e.clientY - r.top) + 'px'); });
   });
 
   // Batch grid.
-  var g = $('grid20'), F = [50, 70, 160, 230]; for (var i = 0; i < 20; i++) { var c = document.createElement('i'); c.style.setProperty('--i', i); c.style.backgroundImage = 'url(assets/frame-' + F[i % 4] + '.webp)'; g.appendChild(c); }
+  var g = $('grid20'); for (var i = 0; i < 20; i++) { var c = document.createElement('i'); c.style.setProperty('--i', i); g.appendChild(c); } // frames: home.css
 
   /* ---------- The cut console: a real take, before and after its real cut ----------
      Data and video come from assets/demo/ (tools/make-demo.py: the raw take, the engine's cut list, the word times).
@@ -44,6 +46,10 @@
     var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
 
     fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
+    // cut.mp4 (preload none) loads once the raw take is buffered, so the two don't split the bandwidth the 3x opening needs.
+    var loadCut = function () { if (vCut.preload !== 'auto') vCut.preload = 'auto'; };
+    var rawIn = function () { var b = vRaw.buffered; if (b.length && b.end(b.length - 1) >= vRaw.duration - 0.5) loadCut(); };
+    vRaw.addEventListener('progress', rawIn); vRaw.addEventListener('suspend', rawIn); // suspend: the download finished or paused
 
     function build(d) {
       D = d.duration; RAW_S = d.rawS; SEGS = d.segments; CUTS = SEGS.filter(function (sg) { return sg.cut; });
@@ -161,7 +167,9 @@
     // start when play() is called before a seek lands, so after a seek it plays only once the seek is done.
     function go(fromStart, at) {
       cancelAnimationFrame(raf);
-      var v = active(); show(v);
+      var v = active();
+      // No poster on cut.mp4 (a late poster paint would count as the page's largest paint): the raw frame stays until it has one.
+      if (v.readyState < 2) v.addEventListener('loadeddata', function () { if (active() === v) show(v); }, { once: true }); else show(v);
       if (fromStart) at = v === vCut ? 0 : mode === 'before' ? 0 : firstPlaying(0).s + 0.01;
       if (at != null) v.currentTime = at;
       ph.classList.add('on');
@@ -200,12 +208,12 @@
       mode = 'before'; modeSet.querySelector('[value="before"]').checked = true; cbody.classList.add('before'); labels();
       CUTS.forEach(function (sg) { sg.el.classList.remove('flag'); });
       phase = 'intro'; setStatus('scan', 'Finding cuts'); cap.innerHTML = ''; capKey = '';
-      show(vRaw); vRaw.loop = false; vRaw.currentTime = 0; vRaw.playbackRate = 3; ph.classList.add('on');
+      show(vRaw); vRaw.loop = false; vRaw.currentTime = 0; vRaw.playbackRate = 3; ph.classList.add('on'); rawIn(); // a fast connection may have finished the raw take already
       if (!paused) vRaw.play().catch(function () {});
       raf = requestAnimationFrame(tick);
     }
     function introDone() {
-      phase = 'cut'; vRaw.pause(); vRaw.playbackRate = 1; setStatus('cut', 'Cutting'); ph.classList.remove('on');
+      phase = 'cut'; vRaw.pause(); vRaw.playbackRate = 1; setStatus('cut', 'Cutting'); ph.classList.remove('on'); loadCut();
       cbody.classList.remove('before');
       var gone = 0, n = 0;
       CUTS.forEach(function (sg) {
@@ -269,8 +277,8 @@
   cv.addEventListener('play', function () { cancelAnimationFrame(capRaf); capTick(); });
   cv.addEventListener('pause', function () { cancelAnimationFrame(capRaf); });
   capDraw(0.7);
-  if (reduce) cv.removeAttribute('autoplay'), cv.pause();
-  new IntersectionObserver(function (es) { if (es[0].isIntersecting && !reduce) cv.play().catch(function () {}); else cv.pause(); }, { threshold: 0.15 }).observe(cf);
+  // preload none: the clip loads as it nears the screen (play() fetches it), not with the page.
+  new IntersectionObserver(function (es) { if (es[0].isIntersecting && !reduce) cv.play().catch(function () {}); else cv.pause(); }, { rootMargin: '200px 0px' }).observe(cf);
   cf.addEventListener('click', function (e) { if (e.target.closest('button')) return; cv.paused ? cv.play().catch(function () {}) : cv.pause(); });
   csnd.addEventListener('click', function () { cv.muted = !cv.muted; csnd.setAttribute('aria-pressed', !cv.muted); if (!cv.muted && cv.paused) cv.play().catch(function () {}); });
   document.querySelector('.styles').addEventListener('click', function (e) {
