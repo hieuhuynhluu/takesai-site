@@ -7,18 +7,18 @@
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <title>TakesAI Privacy Policy</title>
 <meta name="description" content="What TakesAI collects, where it goes, how long it is kept and how to delete it.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="preload" href="../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../style.css">
 <script src="../assets/site.js" defer></script>
 </head>
 <body>
-<main class="strip">
-<nav>
-  <a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a>
+<header class="site-header"><nav>
+  <a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></picture></a>
   <span class="links"><a href="./" aria-current="page">Privacy</a><a href="../terms/">Terms</a><a href="../support/">Support</a></span>
-</nav>
+</nav></header>
+<main class="page">
 
 <h1>Privacy Policy</h1>
 <p class="meta">Last updated 18 November 2026 · Applies to the TakesAI app on iPhone and Android, and to the takesai.app website</p>
@@ -32,8 +32,8 @@
   <li><span>Audio to</span><span>ElevenLabs (AssemblyAI if ElevenLabs is down)</span></li>
   <li><span>Transcript text to</span><span>Google (Gemini)</span></li>
   <li><span>Visits to takesai.app</span><span>Measured with Meta and TikTok ad pixels. <a href="../privacy-choices/">You can opt out.</a></span></li>
-  <li class="cut"><span>− What the app sends us, sold or used for ads</span><span>Never</span></li>
-  <li class="cut"><span>− Used to train AI models</span><span>No</span></li>
+  <li><span>What the app sends us, sold or used for ads</span><span>Never</span></li>
+  <li><span>Used to train AI models</span><span>No</span></li>
 </ul>
 
 <section id="who-we-are">
@@ -272,8 +272,8 @@
 <h3>Links from creators</h3>
 <p>A link such as takesai.app/go/name sends you on to the App Store with a tag that names the link you came through. Apple then shows us how many downloads each link brought, as totals. It does not tell us who you are.</p>
 
-<h3>Hosting and fonts</h3>
-<p>The site is hosted by GitHub Pages, which may log visitors' IP addresses, and loads its font from Google Fonts.</p>
+<h3>Hosting</h3>
+<p>The site is hosted by GitHub Pages, which may log visitors' IP addresses.</p>
 </section>
 
 <section id="changes">
@@ -287,7 +287,13 @@
 </section>
 </main>
 <footer class="site-footer">
-  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../#how">How it works</a></li><li><a href="../#pricing">Pricing</a></li><li><a href="../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../earn/">Affiliates</a></li><li><a href="../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../support/">Support</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../terms/">Terms</a></li><li><a href="../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 </body>
 </html>

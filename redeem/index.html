@@ -8,25 +8,25 @@
 <title>Add your plan to TakesAI</title>
 <meta name="description" content="You bought TakesAI on takesai.app. Here's how to add the plan to the app.">
 <meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="preload" href="../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../style.css">
 <!-- No site.js, so no pixels or Tolt: the URL carries the redeem token (contract section 3). No referrer either,
      so a click to another page here can't hand the token to that page's pixels. -->
 <meta name="referrer" content="no-referrer">
 </head>
 <body>
-<main class="strip">
-<nav><a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../support/">Support</a></span></nav>
+<header class="site-header"><nav><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></picture></a> <span class="links"><a href="../support/">Support</a></span></nav></header>
+<main class="page">
 
 <h1>Add your plan to TakesAI</h1>
-<p class="lede">You bought TakesAI on takesai.app. Three steps put the plan on your account in the app.</p>
+<p class="lede">You bought a plan on takesai.app. Three steps put it in the app.</p>
 
 <ol>
-  <li><strong>Install TakesAI</strong> on your iPhone or Android phone. <a class="btn" href="../beta/">Get the beta app</a></li>
-  <li><strong>Open it and sign in with the email you bought with:</strong> choose I already have an account, then the email code, or Google or Apple with that same address (not "Hide My Email").</li>
-  <li><strong>Your plan is there.</strong> If it isn't, email <a href="mailto:support@takesai.app">support@takesai.app</a> from the address you bought with, with your code below, and we'll attach it.</li>
+  <li><strong>Install TakesAI,</strong> then choose I already have an account.<br><a class="btn btn-cut redeem-get" href="../beta/">Get the beta app</a></li>
+  <li><strong>Sign in with the email you bought with,</strong> not "Hide My Email".</li>
+  <li><strong>Your plan is there.</strong> If not, email <a href="mailto:support@takesai.app">support@takesai.app</a> your code below, from that address.</li>
 </ol>
 
 <section id="code-box" hidden>
@@ -39,7 +39,13 @@
 <p>Something not working? <a href="../support/">Contact support</a> with the email address you bought with.</p>
 </main>
 <footer class="site-footer">
-  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../#how">How it works</a></li><li><a href="../#pricing">Pricing</a></li><li><a href="../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../earn/">Affiliates</a></li><li><a href="../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../support/">Support</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../terms/">Terms</a></li><li><a href="../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 <script>
   // Shows the 6-character code from ?c=; anything else is ignored.

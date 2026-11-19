@@ -1,0 +1,314 @@
+/* Built from docs/marketing/mockups/premium/index.html. */
+// Home page behaviour (M-86): load choreography, nav, menu, reveals, the cut console, the captions tile, pricing.
+(function () {
+  var root = document.documentElement, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // Load choreography once fonts are in (or after 600 ms at most).
+  var go = function () { root.classList.add('ready'); };
+  (document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 600); })]) : Promise.resolve()).then(function () { requestAnimationFrame(go); });
+
+  // Nav: glass once the page moves.
+  var nav = $('nav'), onScroll = function () { nav.classList.toggle('scrolled', scrollY > 8); };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // Phone menu.
+  var mb = $('menu-btn');
+  mb.addEventListener('click', function () { var open = root.classList.toggle('menu-open'); mb.setAttribute('aria-expanded', open); });
+  $('sheet').addEventListener('click', function (e) { if (e.target.closest('a')) { root.classList.remove('menu-open'); mb.setAttribute('aria-expanded', false); } });
+
+  // Scroll reveal.
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -5% 0px' });
+  document.querySelectorAll('[data-r]').forEach(function (el) { io.observe(el); });
+
+  // Pointer spotlight.
+  document.querySelectorAll('.spot').forEach(function (el) {
+    el.addEventListener('pointermove', function (e) { var r = el.getBoundingClientRect(); el.style.setProperty('--mx', (e.clientX - r.left) + 'px'); el.style.setProperty('--my', (e.clientY - r.top) + 'px'); });
+  });
+
+  // Batch grid.
+  var g = $('grid20'), F = [50, 70, 160, 230]; for (var i = 0; i < 20; i++) { var c = document.createElement('i'); c.style.setProperty('--i', i); c.style.backgroundImage = 'url(assets/frame-' + F[i % 4] + '.webp)'; g.appendChild(c); }
+
+  /* ---------- The cut console: a real take, before and after its real cut ----------
+     Data and video come from assets/demo/ (tools/make-demo.py: the raw take, the engine's cut list, the word times).
+     Before plays the raw take; After plays the cut (cut.mp4), or the raw take skipping what is still cut once a part is back. */
+  (function () {
+    var con = $('console'), cbody = $('cbody'), track = $('track'), ph = $('ph'), receipt = $('receipt'), modeSet = $('mode');
+    var vRaw = $('vraw'), vCut = $('vcut'), cap = $('cap'), tc = $('tc'), hint = $('hint'), vsnd = $('vsnd'), pauseBtn = $('pause');
+    var status = $('status'), statusT = $('status-t'), count = $('count'), countL = $('count-l'), rulers = document.querySelectorAll('.ruler span');
+    var mm = function (s) { s = Math.max(0, s); return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0'); };
+    var undo = '<svg class="undo" viewBox="0 0 16 16"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>';
+    var redo = '<svg class="redo" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><path d="M14 3 5.5 10.5M10 10l4 3M5.5 5.5 8 8"/></svg>';
+    var play = '<svg class="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></svg>';
+    var D, RAW_S, SEGS, CUTS, WAVE, STEP, drawnW = 0, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
+    var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
+
+    fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
+
+    function build(d) {
+      D = d.duration; RAW_S = d.rawS; SEGS = d.segments; CUTS = SEGS.filter(function (sg) { return sg.cut; });
+      WAVE = d.wave; STEP = d.waveStep;
+      receipt.innerHTML = '<li class="head"><span>Your video</span><span>' + mm(RAW_S) + '</span></li>';
+      SEGS.forEach(function (sg) {
+        var len = sg.e - sg.s, el = document.createElement('div');
+        el.className = 'clip'; el.style.setProperty('--g', len.toFixed(3));
+        el.innerHTML = '<div class="wave"></div><div class="strip" style="--k:' + Math.floor(sg.s * 2) + '"></div>';
+        track.insertBefore(el, ph); sg.el = el;
+        el.addEventListener('click', function () { seekTo(sg); });
+        if (!sg.cut) return;
+        var li = document.createElement('li');
+        li.className = 'x p';
+        li.innerHTML = '<button class="row" type="button"><span class="l">− ' + sg.cut + '</span><span class="v">' + mm(sg.sec) + '</span><span class="rs" aria-hidden="true">' + undo + redo + play + '</span></button>';
+        receipt.appendChild(li); sg.li = li; sg.btn = li.querySelector('.row');
+        sg.btn.addEventListener('click', function () { lineTap(sg); });
+        var on = function () { li.classList.add('hot'); el.classList.add('hot'); }, off = function () { li.classList.remove('hot'); el.classList.remove('hot'); };
+        [li, el].forEach(function (n) { n.addEventListener('pointerenter', on); n.addEventListener('pointerleave', off); });
+        li.addEventListener('focusin', on); li.addEventListener('focusout', off);
+      });
+      total = document.createElement('li'); total.className = 'total p'; total.innerHTML = '<span>Your cut</span><span id="tot"></span>';
+      receipt.appendChild(total);
+      // Caption lines: up to four words, broken at pauses, punctuation and the edges of cut parts.
+      var cur = null;
+      d.words.forEach(function (w) {
+        var sg = segAt(w[0] + 0.01);
+        if (!cur || cur.sg !== sg || w[0] - cur.e > 0.45 || cur.w.length >= 4 || /[.?!,]$/.test(cur.w[cur.w.length - 1][2])) { cur = { s: w[0], e: w[1], sg: sg, w: [] }; LINES.push(cur); }
+        cur.w.push(w); cur.e = w[1];
+      });
+      $('m-before').textContent = mm(RAW_S);
+      waves(); new ResizeObserver(waves).observe(track); // a window narrowed or a phone turned redraws the bars to fit
+      labels();
+      if (visible) begin();
+    }
+
+    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar for the timeline's current width,
+    // so the bars never push the timeline wider than its card.
+    function waves() {
+      var tw = track.clientWidth; if (!tw || Math.abs(tw - drawnW) < 24) return; drawnW = tw;
+      var perSec = Math.max(2, Math.min(7, tw / D / 4));
+      SEGS.forEach(function (sg) {
+        var len = sg.e - sg.s, bars = Math.max(2, Math.round(len * perSec)), w = '';
+        for (var b = 0; b < bars; b++) {
+          var k0 = Math.floor((sg.s + len * b / bars) / STEP), k1 = Math.min(WAVE.length - 1, Math.floor((sg.s + len * (b + 1) / bars) / STEP)), peak = 0;
+          for (var k = k0; k <= k1; k++) peak = Math.max(peak, WAVE[k] || 0);
+          w += '<i style="--a:' + Math.max(5, Math.round(peak * 100)) + '%"></i>';
+        }
+        sg.el.firstChild.innerHTML = w;
+      });
+    }
+
+    // ---- time and geometry ----
+    function segAt(t) { for (var i = 0; i < SEGS.length; i++) if (t < SEGS[i].e) return SEGS[i]; return SEGS[SEGS.length - 1]; }
+    function plays(sg) { return mode === 'before' || !sg.cut || sg.back; }
+    function anyBack() { return CUTS.some(function (sg) { return sg.back; }); }
+    function afterSecs() { return RAW_S - CUTS.reduce(function (n, sg) { return n + (sg.back ? 0 : sg.sec); }, 0); }
+    function active() { return mode === 'before' || anyBack() ? vRaw : vCut; }
+    function cutToRaw(t) { var acc = 0, kept = SEGS.filter(function (sg) { return !sg.cut; }); for (var i = 0; i < kept.length; i++) { var l = kept[i].e - kept[i].s; if (t < acc + l || i === kept.length - 1) return kept[i].s + Math.min(l, t - acc); acc += l; } return 0; }
+    function rawToCut(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (sg.cut) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
+    function elapsed(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (!plays(sg)) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
+    function firstPlaying(from) { for (var i = 0; i < SEGS.length; i++) if (plays(SEGS[i]) && SEGS[i].e > from) return SEGS[i]; return null; }
+    function placePH(sg, frac) { var r = sg.el.getBoundingClientRect(), tr = track.getBoundingClientRect(); ph.style.transform = 'translateX(' + (r.left - tr.left + Math.min(1, Math.max(0, frac)) * r.width) + 'px)'; }
+
+    // ---- labels: the switch, the counter, the ruler, the total ----
+    function setCount(v, label) {
+      countL.textContent = label;
+      if (v === shown) return; shown = v; count.textContent = mm(v);
+      count.classList.remove('tick'); void count.offsetWidth; count.classList.add('tick');
+    }
+    function ruler(t) { rulers.forEach(function (s, i) { s.textContent = mm(Math.round(t * i / 6)); }); }
+    function labels() {
+      var a = afterSecs();
+      $('m-after').textContent = mm(a); $('tot').textContent = mm(a);
+      if (mode === 'before') { setCount(RAW_S, 'Raw take'); ruler(RAW_S); } else { setCount(a, 'Your cut'); ruler(a); }
+    }
+    function setStatus(s, t) { status.dataset.s = s; statusT.textContent = t; }
+
+    // ---- drawing, every frame while a video plays ----
+    function draw(t) {
+      var sg = segAt(t);
+      if (plays(sg)) placePH(sg, (t - sg.s) / (sg.e - sg.s));
+      if (mode === 'before') {
+        tc.textContent = mm(t) + ' / ' + mm(RAW_S);
+        CUTS.forEach(function (c) { var on = c === sg; c.li.classList.toggle('now', on); c.el.classList.toggle('now', on); });
+        if (capKey) { cap.innerHTML = ''; capKey = ''; }
+      } else {
+        tc.textContent = mm(elapsed(t)) + ' / ' + mm(afterSecs());
+        caption(t);
+      }
+    }
+    function caption(t) {
+      var L = null, k = -1;
+      for (var i = 0; i < LINES.length; i++) { var l = LINES[i]; if (t >= l.s - 0.05 && t <= l.e + 0.35 && plays(l.sg)) { L = l; break; } }
+      if (L) L.w.forEach(function (w, j) { if (t >= w[0]) k = j; });
+      var key = L ? L.s + ':' + k : '';
+      if (key === capKey) return; capKey = key;
+      cap.innerHTML = L ? L.w.map(function (w, j) { return '<span' + (j === k ? ' class="on"' : '') + '>' + w[2] + '</span>'; }).join(' ') : '';
+    }
+    function tick() {
+      var v = active(), t = v === vCut ? cutToRaw(vCut.currentTime) : vRaw.currentTime;
+      if (mode === 'after' && v === vRaw) { // the raw take, skipping what is still cut
+        var sg = segAt(t);
+        if (!plays(sg) && !vRaw.seeking) { var nx = firstPlaying(sg.e) || firstPlaying(0); vRaw.currentTime = nx.s + 0.01; t = nx.s; }
+      }
+      if (phase === 'intro') {
+        CUTS.forEach(function (c) { if (t >= c.s + 0.05) c.el.classList.add('flag'); });
+        if (vRaw.ended || t >= D - 0.06) { draw(D - 0.01); introDone(); return; }
+      }
+      draw(t);
+      raf = requestAnimationFrame(tick);
+    }
+    function show(v) { [vRaw, vCut].forEach(function (x) { x.classList.toggle('on', x === v); if (x !== v) x.pause(); }); }
+    // Plays the active video from a time (seconds in that video), or on from where it is. A video that has ended jumps to its
+    // start when play() is called before a seek lands, so after a seek it plays only once the seek is done.
+    function go(fromStart, at) {
+      cancelAnimationFrame(raf);
+      var v = active(); show(v);
+      if (fromStart) at = v === vCut ? 0 : mode === 'before' ? 0 : firstPlaying(0).s + 0.01;
+      if (at != null) v.currentTime = at;
+      ph.classList.add('on');
+      draw(v === vCut ? cutToRaw(v.currentTime) : v.currentTime);
+      if (paused || !visible) return;
+      var start = function () { v.play().catch(function () {}); raf = requestAnimationFrame(tick); };
+      if (v.seeking) v.addEventListener('seeked', start, { once: true }); else start();
+    }
+
+    // ---- modes ----
+    function setMode(m) {
+      mode = m;
+      modeSet.querySelector('[value="' + m + '"]').checked = true;
+      cbody.classList.toggle('before', m === 'before');
+      CUTS.forEach(function (sg) {
+        sg.el.classList.add('flag');
+        sg.el.classList.toggle('gone', m === 'after' && !sg.back);
+        sg.el.classList.toggle('back', !!sg.back);
+        if (m === 'after') { sg.li.classList.remove('now'); sg.el.classList.remove('now'); }
+        sg.btn.setAttribute('aria-label', (m === 'before' ? 'Play ' : sg.back ? 'Cut ' : 'Bring back ') + sg.cut);
+      });
+      vRaw.playbackRate = 1; vRaw.loop = true;
+      labels();
+    }
+    function settle() { // everything printed, the cut made, After ready
+      timers.forEach(clearTimeout); timers = [];
+      CUTS.forEach(function (sg) { sg.li.classList.add('in'); });
+      total.classList.add('in'); hint.classList.add('in');
+      phase = 'play'; setStatus('ready', 'Cut ready');
+    }
+    // The opening: Before at 3x with each part turning red as it plays, a still frame while the cut closes up, then After.
+    function run() {
+      timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+      CUTS.forEach(function (sg) { sg.back = false; sg.el.classList.remove('gone', 'flag', 'back', 'now'); sg.li.classList.remove('in', 'restored', 'now'); });
+      total.classList.remove('in'); hint.classList.remove('in');
+      mode = 'before'; modeSet.querySelector('[value="before"]').checked = true; cbody.classList.add('before'); labels();
+      CUTS.forEach(function (sg) { sg.el.classList.remove('flag'); });
+      phase = 'intro'; setStatus('scan', 'Finding cuts'); cap.innerHTML = ''; capKey = '';
+      show(vRaw); vRaw.loop = false; vRaw.currentTime = 0; vRaw.playbackRate = 3; ph.classList.add('on');
+      if (!paused) vRaw.play().catch(function () {});
+      raf = requestAnimationFrame(tick);
+    }
+    function introDone() {
+      phase = 'cut'; vRaw.pause(); vRaw.playbackRate = 1; setStatus('cut', 'Cutting'); ph.classList.remove('on');
+      cbody.classList.remove('before');
+      var gone = 0, n = 0;
+      CUTS.forEach(function (sg) {
+        later(function () { sg.el.classList.add('flag', 'gone'); sg.li.classList.add('in'); gone += sg.sec; setCount(RAW_S - gone, 'Your cut'); ruler(RAW_S - gone); }, 300 + n * 260); n++;
+      });
+      later(function () { total.classList.add('in'); $('tot').textContent = mm(afterSecs()); }, 300 + n * 260 + 150);
+      later(function () { settle(); setMode('after'); go(true); }, 300 + n * 260 + 800);
+    }
+    function begin() {
+      if (started || !SEGS) return; started = true;
+      if (reduce) { settle(); paused = true; pauseBtn.classList.add('paused'); pauseBtn.setAttribute('aria-label', 'Play'); setMode('after'); go(true); }
+      else setTimeout(run, 500);
+    }
+
+    // ---- what people can do ----
+    function lineTap(sg) {
+      if (phase !== 'play') { settle(); }
+      if (mode === 'before') { vRaw.playbackRate = 1; vRaw.loop = true; go(false, sg.s); return; }
+      sg.back = !sg.back; sg.li.classList.toggle('restored', sg.back);
+      setMode('after'); setStatus('ready', sg.back ? sg.cut + ' is back' : 'Cut ready');
+      if (anyBack()) { // play from just before the part, so it is heard in place
+        var t0 = sg.back ? Math.max(0, sg.s - 1.5) : sg.s; if (!plays(segAt(t0))) t0 = sg.back ? sg.s : (firstPlaying(sg.e) || firstPlaying(0)).s;
+        go(false, t0 + 0.01);
+      } else go(true);
+    }
+    function seekTo(sg) {
+      if (!SEGS || phase !== 'play' || !plays(sg)) return;
+      go(false, (active() === vCut ? rawToCut(sg.s) : sg.s) + 0.01);
+    }
+    function pick(m) {
+      if (phase !== 'play') { cancelAnimationFrame(raf); vRaw.pause(); settle(); }
+      setMode(m); setStatus(m === 'before' ? 'raw' : 'ready', m === 'before' ? 'Raw take' : 'Cut ready'); go(true);
+    }
+    modeSet.addEventListener('change', function (e) { pick(e.target.value); });
+    // During the opening Before is already chosen, so tapping it fires no change: it stops the opening and stays in Before.
+    modeSet.addEventListener('click', function (e) { var inp = e.target.closest('input'); if (inp && SEGS && phase !== 'play' && inp.value === mode) pick(mode); });
+    pauseBtn.addEventListener('click', function () {
+      paused = !paused; pauseBtn.classList.toggle('paused', paused); pauseBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+      if (paused) { cancelAnimationFrame(raf); vRaw.pause(); vCut.pause(); } else if (phase === 'intro') { vRaw.play().catch(function () {}); raf = requestAnimationFrame(tick); } else if (phase === 'play') go(false);
+    });
+    $('replay').addEventListener('click', function () { if (!SEGS) return; if (reduce) { settle(); setMode('after'); go(true); } else { paused = false; pauseBtn.classList.remove('paused'); run(); } });
+    vsnd.addEventListener('click', function () { var m = !vRaw.muted; vRaw.muted = vCut.muted = m; vsnd.setAttribute('aria-pressed', !m); if (!m && paused) pauseBtn.click(); });
+    vRaw.addEventListener('ended', function () { if (phase === 'intro') { cancelAnimationFrame(raf); draw(D - 0.01); introDone(); } });
+    new IntersectionObserver(function (es) {
+      visible = es[0].isIntersecting;
+      if (visible && !started) begin();
+      else if (started && phase === 'play') { if (visible && !paused) go(false); else { cancelAnimationFrame(raf); vRaw.pause(); vCut.pause(); } }
+      else if (started && phase === 'intro') { if (visible && !paused) { vRaw.play().catch(function () {}); raf = requestAnimationFrame(tick); } else { cancelAnimationFrame(raf); vRaw.pause(); } }
+    }, { threshold: 0.15 }).observe(con);
+  })();
+
+  /* ---------- Captions tile: real word times (ElevenLabs, clip1 15.298 s on) ---------- */
+  var cv = $('capvid'), cw = $('capwords'), cf = $('capframe'), csnd = $('capsnd'), capRaf = 0;
+  var LINES = [[0, 0.46, [["you'll", 0.03], ['find', 0.15], ['that', 0.33]]], [0.46, 1.5, [['it', 0.47], ['tastes', 0.61], ['really', 1.07], ['good', 1.31]]], [1.5, 9, [['when', 1.51], ['you', 1.6], ['try', 1.73], ['it.', 1.97]]]];
+  function capDraw(t) {
+    var L = LINES.filter(function (l) { return t >= l[0] && t < l[1]; })[0] || LINES[1], k = 0;
+    L[2].forEach(function (w, i) { if (t >= w[1]) k = i; });
+    cw.innerHTML = '<span class="line">' + L[2].map(function (w, i) { return '<span' + (i === k ? ' class="on"' : '') + '>' + w[0] + '</span>'; }).join(' ') + '</span>';
+  }
+  function capTick() { capDraw(cv.currentTime); capRaf = requestAnimationFrame(capTick); }
+  cv.addEventListener('play', function () { cancelAnimationFrame(capRaf); capTick(); });
+  cv.addEventListener('pause', function () { cancelAnimationFrame(capRaf); });
+  capDraw(0.7);
+  if (reduce) cv.removeAttribute('autoplay'), cv.pause();
+  new IntersectionObserver(function (es) { if (es[0].isIntersecting && !reduce) cv.play().catch(function () {}); else cv.pause(); }, { threshold: 0.15 }).observe(cf);
+  cf.addEventListener('click', function (e) { if (e.target.closest('button')) return; cv.paused ? cv.play().catch(function () {}) : cv.pause(); });
+  csnd.addEventListener('click', function () { cv.muted = !cv.muted; csnd.setAttribute('aria-pressed', !cv.muted); if (!cv.muted && cv.paused) cv.play().catch(function () {}); });
+  document.querySelector('.styles').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    cf.dataset.style = b.dataset.style;
+    document.querySelectorAll('.styles button').forEach(function (x) { x.setAttribute('aria-checked', x === b); });
+    capDraw(cv.currentTime || 0.7);
+  });
+
+  /* ---------- Pricing ---------- */
+  var form = $('picker'), incl = $('incl');
+  // Every plan lists the same rows, so a switch shows exactly what changes.
+  var FEATS = ['Auto cut and word-by-word captions', 'Camera, editor and exports', 'Batch: up to 20 videos at once', 'Overlap audio'];
+  var EDITS = { starter: '100 edits a month', pro: '300 edits a month', ultimate: 'Unlimited edits' };
+  var HAS = { starter: [1, 1, 0, 0], pro: [1, 1, 1, 1], ultimate: [1, 1, 1, 1] };
+  var NAMES = { starter: 'Starter', pro: 'Pro', ultimate: 'Ultimate' };
+  var check = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>', cross = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 5 6 6M11 5l-6 6"/></svg>';
+  var tween = function (el, to) {
+    var from = parseFloat(el.textContent.replace('$', '')) || to, t0 = performance.now(), d = reduce ? 1 : 600;
+    (function step(now) { var p = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - p, 4); el.textContent = '$' + (from + (to - from) * e).toFixed(2); if (p < 1) requestAnimationFrame(step); })(t0);
+  };
+  var lastPlan = 'pro', lastPeriod = 'monthly';
+  function sync(first) {
+    var plan = form.elements.plan.value, period = form.elements.period.value, yearly = period === 'yearly';
+    document.querySelectorAll('.chips button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.plan === plan); });
+    if (period !== lastPeriod || first) document.querySelectorAll('.plan .pr').forEach(function (p) {
+      var v = p.querySelector('.v'); first ? (v.textContent = '$' + p.dataset[yearly ? 'y' : 'm']) : tween(v, parseFloat(p.dataset[yearly ? 'y' : 'm'])); p.querySelector('small').textContent = yearly ? 'a year' : 'a month'; });
+    if (plan !== lastPlan || first) {
+      $('incl-name').textContent = NAMES[plan];
+      var rows = [[EDITS[plan], 1]].concat(FEATS.map(function (t, i) { return [t, HAS[plan][i]]; }));
+      incl.innerHTML = rows.map(function (r, i) { return '<li class="' + (first ? '' : 'in') + (r[1] ? '' : ' no') + '" style="--i:' + i + '">' + (r[1] ? check : cross) + r[0] + (r[1] ? '' : '<span class="sr"> (not included)</span>') + '</li>'; }).join('');
+    }
+    var price = form.querySelector('[name="plan"]:checked').closest('.plan').querySelector('.pr').dataset[yearly ? 'y' : 'm'];
+    var end = new Date(Date.now() + 3 * 864e5).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    $('due-when').textContent = 'From ' + end; $('due-p').textContent = '$' + price + (yearly ? '/yr' : '/mo');
+    lastPlan = plan; lastPeriod = period;
+  }
+  document.querySelector('.chips').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { form.elements.plan.value = b.dataset.plan; sync(); } });
+  form.addEventListener('change', function () { sync(); });
+  sync(true);
+})();

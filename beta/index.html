@@ -7,65 +7,71 @@
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <title>Get the TakesAI beta</title>
 <meta name="description" content="Install the TakesAI beta on iPhone (TestFlight) or Android (Google Play test), sign in, and start cutting your talking videos.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="preload" href="../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../style.css">
 <script src="../assets/site.js" defer></script>
 </head>
 <body>
 <!-- The beta page (M-84). Until 1.0.0 is on the App Store, every download button on the site points here; at release they go back to the App Store (site/README.md, "Release"). -->
-<main class="strip">
-<nav>
-  <a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a>
+<header class="site-header"><nav>
+  <a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></picture></a>
   <span class="links"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../support/">Support</a></span>
-</nav>
+</nav></header>
+<main class="page">
 
 <h1>Get the beta</h1>
 <p class="meta">TakesAI is in beta until it reaches the App Store</p>
 
-<p>Film your talking video in takes, tap Send and put the phone down. TakesAI cuts the retakes, ums and dead air and hands back one clean cut, with a receipt of everything it removed.</p>
+<p>Tap Send on your takes. TakesAI cuts the retakes, ums and dead air.</p>
 
 <section id="iphone">
 <h2>iPhone</h2>
-<ol>
-  <li>Install <strong>TestFlight</strong>, Apple's app for beta apps, from the App Store.</li>
-  <li>On your iPhone, open <a href="https://testflight.apple.com/join/pxnnbDsY" data-track="download">the TakesAI beta invite</a> and tap <strong>Accept</strong>, then <strong>Install</strong>.</li>
-  <li>Open TakesAI and sign in with Apple, Google or your email.</li>
+<ol class="steps">
+  <li><h3>Install TestFlight</h3><p>Apple's app for beta apps, from the App Store.</p></li>
+  <li><h3>Accept the invite</h3><p>On your iPhone, open the invite and tap <strong>Accept</strong>, then <strong>Install</strong>.</p><a class="btn btn-cut" href="https://testflight.apple.com/join/pxnnbDsY" data-track="download">Join the iPhone beta</a></li>
+  <li><h3>Sign in</h3><p>Open TakesAI and sign in with Apple, Google or your email.</p></li>
 </ol>
 </section>
 
 <section id="android">
 <h2>Android</h2>
-<p>The Android version is in a Google Play test, open in the United States, Canada and Australia. Use the same Google account for all three steps:</p>
-<ol>
-  <li>Join the tester group: <a href="https://groups.google.com/g/takesai-testers">groups.google.com/g/takesai-testers</a></li>
-  <li>Opt in to the test: <a href="https://play.google.com/apps/testing/com.hieuhuynhluu.takesai">play.google.com/apps/testing/com.hieuhuynhluu.takesai</a></li>
-  <li>Install TakesAI from Google Play: <a href="https://play.google.com/store/apps/details?id=com.hieuhuynhluu.takesai" data-track="download">open the Play page</a>, then sign in.</li>
+<p>Open in the US, Canada and Australia. Use one Google account for all three steps:</p>
+<ol class="steps">
+  <li><h3>Join the tester group</h3><p><a href="https://groups.google.com/g/takesai-testers">groups.google.com/g/takesai-testers</a></p></li>
+  <li><h3>Opt in to the test</h3><p><a href="https://play.google.com/apps/testing/com.hieuhuynhluu.takesai">play.google.com/apps/testing/com.hieuhuynhluu.takesai</a></p></li>
+  <li><h3>Install from Google Play</h3><p>Then open TakesAI and sign in.</p><a class="btn btn-cut" href="https://play.google.com/store/apps/details?id=com.hieuhuynhluu.takesai" data-track="download">Open the Play page</a></li>
 </ol>
-<p>Please stay opted in for 14 days: Google needs that before TakesAI can launch on Android.</p>
+<p>Please stay opted in for 14 days. Google needs that before we launch on Android.</p>
 </section>
 
 <section id="plan">
 <h2>Your plan</h2>
-<p class="if-no-trial">Plans open on takesai.app shortly. If you have a code or plan to buy on takesai.app, create your account but don't start any trial or subscription inside the app, not even TestFlight's free one: the web plan needs an account that hasn't had one.</p>
+<p class="if-no-trial">Plans open on takesai.app soon. Until then, don't start any trial inside the app.</p>
 <p class="if-trial">Start your plan on the web first, then sign in to the app:</p>
-<ol class="if-trial">
-  <li><strong>Start your plan at <a href="../checkout/">takesai.app/checkout</a>.</strong> Add your code there or on the payment page if you have one. This creates your TakesAI account with the email you pay with.</li>
-  <li><strong>Install the beta</strong> (above), open it and choose <strong>I already have an account</strong>.</li>
-  <li><strong>Sign in with that same email:</strong> the email code, or Google or Apple with that address. Don't use Apple's "Hide My Email": a hidden address can't find your plan.</li>
-  <li><strong>Your plan is there.</strong> Don't start a trial or subscription inside the app; you don't need one.</li>
+<ol class="steps if-trial">
+  <li><h3>Start your plan on the web</h3><p>At <a href="../checkout/">takesai.app/checkout</a>, with the email you'll sign in with.</p></li>
+  <li><h3>Install the beta</h3><p>Above, then choose <strong>I already have an account</strong>.</p></li>
+  <li><h3>Sign in with that same email</h3><p>Not Apple's "Hide My Email".</p></li>
+  <li><h3>Your plan is there</h3><p>Don't start a trial or subscription inside the app.</p></li>
 </ol>
 <p class="if-trial">Plan doesn't show? Email <a href="mailto:support@takesai.app">support@takesai.app</a> from the address you paid with.</p>
 </section>
 
 <section id="feedback">
 <h2>Tell us what breaks</h2>
-<p>In the app, <strong>You → Settings → Report a problem</strong>. Or email <a href="mailto:support@takesai.app">support@takesai.app</a>. Every report gets read.</p>
+<p>In the app: <strong>You → Settings → Report a problem</strong>. Or email <a href="mailto:support@takesai.app">support@takesai.app</a>.</p>
 </section>
 </main>
 <footer class="site-footer">
-  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../#how">How it works</a></li><li><a href="../#pricing">Pricing</a></li><li><a href="../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../earn/">Affiliates</a></li><li><a href="../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../support/">Support</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../terms/">Terms</a></li><li><a href="../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 </body>
 </html>

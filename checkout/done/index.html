@@ -8,9 +8,9 @@
 <title>Thank you · TakesAI</title>
 <meta name="description" content="Your TakesAI order went through. Get the app and sign in to start cutting.">
 <meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="preload" href="../../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../../style.css">
 <link rel="stylesheet" href="../checkout.css">
 <!-- checkout.js first: it removes ?session_id from the URL before site.js loads the pixels (contract section 3). -->
@@ -18,8 +18,8 @@
 <script src="../../assets/site.js" defer></script>
 </head>
 <body class="checkout">
-<main class="strip">
-<nav aria-label="Main"><a class="brand" href="../../"><img src="../../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../../support/">Support</a></span></nav>
+<header class="site-header"><nav aria-label="Main"><a class="brand" href="../../"><picture><source srcset="../../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../../assets/logo.svg" alt="TakesAI" width="102" height="22"></picture></a> <span class="links"><a href="../../support/">Support</a></span></nav></header>
+<main class="page">
 
 <h1 id="done-h">Thank you</h1>
 <p class="lede" id="done-lede" role="status">Your order went through. Get the app, sign in, and your plan is there.</p>
@@ -34,7 +34,7 @@
   </li>
   <li>
     <h3>Sign in</h3>
-    <p>Choose <strong>I already have an account</strong> and sign in with the email you used at checkout: the email code, or Google or Apple with that same address (not Apple's "Hide My Email"). Your plan is already on your account.</p>
+    <p>Choose <strong>I already have an account</strong>. Use the email you paid with, not "Hide My Email".</p>
   </li>
   <li id="redeem" hidden>
     <h3>Link your plan</h3>
@@ -51,11 +51,17 @@
 <section aria-labelledby="receipt-h">
 <h2 id="receipt-h">Your receipt</h2>
 <p>Stripe, our payment processor, emails your receipt to the address you used at checkout.</p>
-<p>To cancel, go to <a href="../../cancel/">takesai.app/cancel</a> or use the link in that email. You keep your plan until the period you paid for ends, and if you cancel during a free trial you aren't charged. More in <a href="../../support/#web">Support</a>.</p>
+<p>Cancel anytime at <a href="../../cancel/">takesai.app/cancel</a>. Cancel during the trial and you pay nothing.</p>
 </section>
 </main>
 <footer class="site-footer">
-  <a href="../../privacy/">Privacy</a> · <a href="../../terms/">Terms</a> · <a href="../../support/">Support</a><span class="if-trial not-app"> · <a href="../../earn/">Earn with TakesAI</a></span> · <a href="../../privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="../../"><picture><source srcset="../../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../../#how">How it works</a></li><li><a href="../../#pricing">Pricing</a></li><li><a href="../../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../../earn/">Affiliates</a></li><li><a href="../../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../../support/">Support</a></li><li><a href="../../privacy/">Privacy</a></li><li><a href="../../terms/">Terms</a></li><li><a href="../../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 </body>
 </html>

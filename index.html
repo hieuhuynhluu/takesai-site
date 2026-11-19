@@ -6,144 +6,273 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <title>TakesAI: edit less, post more</title>
-<meta name="description" content="Record or import your talking-head takes and tap Send. TakesAI cuts the retakes, ums and dead air and hands back one clean cut, with a receipt of everything it removed.">
+<meta name="description" content="Tap Send on your takes. TakesAI cuts the retakes, ums and dead air, and shows you everything it removed.">
 <link rel="canonical" href="https://takesai.app/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TakesAI">
 <meta property="og:title" content="TakesAI: edit less, post more">
 <meta property="og:description" content="Your takes in. One clean cut out. TakesAI cuts the retakes, ums and dead air from your talking videos and shows you everything it removed.">
 <meta property="og:url" content="https://takesai.app/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="assets/home.css">
+<script>document.documentElement.classList.add('js');</script>
 <script src="assets/site.js" defer></script>
+<script src="assets/home.js" defer></script>
 </head>
 <body class="home">
-<main class="strip">
-<nav aria-label="Main"><a class="brand" href="./"><img src="assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="#how">How it works</a> <a href="#plans">Plans</a> <a href="support/">Support</a></span></nav>
-
-<!-- Black Friday (spec 012; docs/marketing/black-friday.md). Hidden unless the script below finds SALE_ON and the offer window. -->
-<section class="sale" id="sale" hidden aria-labelledby="sale-h">
-  <h2 id="sale-h">Black Friday: 50% off your first year</h2>
-  <p class="meta">Yearly plans · new subscribers · on iPhone · ends Monday</p>
-  <ul class="lines plans">
-    <li><span>Starter, yearly</span><span><s><span class="sr">Regular price </span>$159.99</s> $79.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $159.99 a year</small></li>
-    <li><span>Pro, yearly</span><span><s><span class="sr">Regular price </span>$399.99</s> $199.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $399.99 a year</small></li>
-    <li><span>Ultimate, yearly</span><span><s><span class="sr">Regular price </span>$719.99</s> $359.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $719.99 a year</small></li>
-  </ul>
-  <p class="actions"><a class="btn btn-quiet" href="https://apps.apple.com/app/id6833252992" data-track="download">Get it on the App Store</a></p>
-</section>
-<script>
-  // SALE_ON turns true only once the App Store offer exists (the founder's go). START and END are the US offer's real
-  // start and end from App Store Connect. Outside that window, or with JavaScript off, nothing shows; it ends by itself.
-  (function () {
-    var SALE_ON = false, START = Date.parse('2026-11-27T04:00:00Z'), END = Date.parse('2026-12-01T04:00:00Z'), now = Date.now();
-    if (SALE_ON && now >= START && now < END) document.getElementById('sale').hidden = false;
-  })();
-</script>
-
-<header class="hero">
-  <h1>Edit less. <span>Post more.</span></h1>
-  <p class="tagline">Your takes in. One clean cut out.</p>
-  <p class="lede">Record or import your talking-head takes, tap Send and put the phone down. TakesAI cuts the retakes, ums and dead air and hands back one clean cut, with a receipt of everything it removed.</p>
-  <p class="actions">
-    <a class="btn btn-cut" href="beta/" data-track="download">Get the beta</a>
-    <a class="btn btn-quiet" href="#how">See how it works</a>
-  </p>
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="./" aria-label="TakesAI home"><picture><source srcset="assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#demo">Product</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a class="if-trial not-app" href="earn/">Earn</a><a href="support/">Support</a>
+    </nav>
+    <a class="btn btn-red btn-sm" href="beta/" data-track="download">Get the beta</a>
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="sheet" aria-label="Menu"><i></i><i></i></button>
+  </div>
 </header>
+<div class="sheet" id="sheet">
+  <a href="#demo">Product</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a class="if-trial not-app" href="earn/">Earn</a><a href="support/">Support</a>
+  <a class="btn btn-red" href="beta/" data-track="download">Get the beta</a>
+</div>
 
-<section class="sample" aria-labelledby="sample-h">
-  <h2 id="sample-h">Every cut comes with a receipt</h2>
-  <p class="meta">Sample receipt · made-up numbers, to show the layout</p>
-  <!-- 252 s raw: ink = kept (94 s), red = cut (158 s). Widths are seconds. -->
-  <div class="tape" aria-hidden="true"><i style="flex:22"></i><b style="flex:41"></b><i style="flex:9"></i><b style="flex:5"></b><i style="flex:17"></i><b style="flex:36"></b><i style="flex:14"></i><b style="flex:20"></b><i style="flex:11"></i><b style="flex:4"></b><i style="flex:8"></i><b style="flex:31"></b><i style="flex:13"></i><b style="flex:21"></b></div>
-  <ul class="lines">
-    <li><span>Raw video</span><span>4:12</span></li>
-    <li class="cut"><span>− Retakes × 3</span><span>− 1:48</span></li>
-    <li class="cut"><span>− Ums × 14</span><span>− 0:09</span></li>
-    <li class="cut"><span>− Dead air</span><span>− 0:41</span></li>
-    <li class="total"><span>Your cut</span><span>1:34</span></li>
-  </ul>
-  <p>The totals always add up: raw length, minus what was cut, is the length you keep. Changed your mind? Any removed take comes back with a tap.</p>
+<main>
+<section class="hero">
+  <!-- Black Friday (spec 012; docs/marketing/black-friday.md). Hidden unless the script below finds SALE_ON and the offer window. -->
+  <section class="sale" id="sale" hidden aria-labelledby="sale-h">
+    <h2 id="sale-h">Black Friday: 50% off your first year</h2>
+    <p class="meta">Yearly plans · new subscribers · on iPhone · ends Monday</p>
+    <ul class="lines plans">
+      <li><span>Starter, yearly</span><span><s><span class="sr">Regular price </span>$159.99</s> $79.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $159.99 a year</small></li>
+      <li><span>Pro, yearly</span><span><s><span class="sr">Regular price </span>$399.99</s> $199.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $399.99 a year</small></li>
+      <li><span>Ultimate, yearly</span><span><s><span class="sr">Regular price </span>$719.99</s> $359.99<span class="sr"> for your first year</span></span><small>50% off your first year, then $719.99 a year</small></li>
+    </ul>
+    <p class="actions"><a class="btn btn-quiet" href="https://apps.apple.com/app/id6833252992" data-track="download">Get it on the App Store</a></p>
+  </section>
+  <script>
+    // SALE_ON turns true only once the App Store offer exists (the founder's go). START and END are the US offer's real
+    // start and end from App Store Connect. Outside that window, or with JavaScript off, nothing shows; it ends by itself.
+    (function () {
+      var SALE_ON = false, START = Date.parse('2026-11-27T04:00:00Z'), END = Date.parse('2026-12-01T04:00:00Z'), now = Date.now();
+      if (SALE_ON && now >= START && now < END) document.getElementById('sale').hidden = false;
+    })();
+  </script>
+  <h1><span class="line"><span class="dim">Edit less.</span></span><span class="line"><span>Post more<span class="dot">.</span></span></span></h1>
+  <p class="sub">Tap Send on your takes. TakesAI cuts the retakes, ums and dead air.</p>
+  <div class="ctas">
+    <a class="btn btn-red btn-lg" href="beta/" data-track="download">Get the beta <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+    <a class="btn btn-ghost btn-lg" href="#demo">Watch it cut <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg></a>
+  </div>
+  <p class="meta"><i></i>iPhone and Android, in beta</p>
 </section>
 
-<section id="how" aria-labelledby="how-h">
-  <h2 id="how-h">How it works</h2>
-  <ol class="steps">
-    <li><h3>Film in takes</h3><p>Record in the TakesAI camera, pausing between takes, or import a video you already filmed.</p></li>
-    <li><h3>Tap Send and walk away</h3><p>You can leave the app. A notification tells you when the cut is ready. On Pro and Ultimate, Batch sends up to 20 videos at once.</p></li>
-    <li><h3>Get the cut and its receipt</h3><p>Any removed take comes back with a tap. Refine the cut in the editor, then save it or share it.</p></li>
-  </ol>
-</section>
-
-<section aria-labelledby="who-h">
-  <h2 id="who-h">For people who post every day</h2>
-  <p>TakesAI is built for creators who film talking videos daily, such as TikTok Shop affiliates and UGC creators. When the editing is done for you, a shoot turns into more videos and more posts.</p>
-</section>
-
-<section aria-labelledby="trust-h">
-  <h2 id="trust-h">Send it and walk away</h2>
-  <ul class="lines reasons">
-    <li><span>A failed cut never uses an edit</span><span>An edit is used only when a cut opens in your editor.</span></li>
-    <li><span>Every removed take can come back</span><span>Put it back in the editor with a tap.</span></li>
-    <li><span>The receipt shows every cut</span><span>Each retake, um and stretch of dead air, itemised.</span></li>
-    <li><span>Your video stays on your phone</span><span>Only its sound and a list of frame times are sent to make the cut. <a href="privacy/">Privacy Policy</a></span></li>
-  </ul>
-</section>
-
-<section aria-labelledby="cost-h">
-  <h2 id="cost-h">What editing costs</h2>
-  <ul class="lines">
-    <li><span>Cut it yourself</span><span>Your own time, every video</span></li>
-    <li><span>Hire an editor</span><span>Typically $8–15 a video, $400+ a month</span></li>
-    <li><span>TakesAI</span><span><strong>From $19.99 a month for 100 edits</strong></span></li>
-  </ul>
-</section>
-
-<section id="plans" aria-labelledby="plans-h">
-  <h2 id="plans-h">Plans</h2>
-  <ul class="lines plans">
-    <li><span>Starter</span><span>$19.99 a month</span><small>100 edits a month · or $159.99 a year</small></li>
-    <li><span>Pro</span><span>$49.99 a month</span><small>300 edits a month, plus Batch and overlap audio · or $399.99 a year</small></li>
-    <li><span>Ultimate</span><span>$89.99 a month</span><small>Unlimited edits, plus Batch and overlap audio · or $719.99 a year</small></li>
-  </ul>
-  <p>One edit is used when a cut first opens in your editor. A failed or cancelled cut uses none, and a cut never uses more than one, however often you re-cut or export it. The details are in the <a href="terms/">Terms of Use</a>.</p>
-  <p class="if-trial"><strong>Every plan starts with a 3-day free trial, then the plan's price.</strong></p>
-  <p class="if-no-trial">Subscribe in the app. Cancel anytime in your Apple ID settings.</p>
-</section>
-
-<section id="android" aria-labelledby="android-h">
-  <h2 id="android-h">Android</h2>
-  <p>TakesAI is on iPhone today. Android is on the way.</p>
-</section>
-
-<section class="if-trial not-app" aria-labelledby="earn-h">
-  <h2 id="earn-h">Earn with TakesAI</h2>
-  <p>Post about TakesAI and earn 30% of every payment a customer you send makes in their first year. <a href="earn/">See how the affiliate program works</a></p>
-</section>
-
-<section aria-labelledby="faq-h">
-  <h2 id="faq-h">Questions</h2>
-  <div class="faq">
-    <details><summary>What does TakesAI cut?</summary><p>Retakes (it keeps your best take), ums and other fillers, and dead air. It adds word-by-word captions too.</p></details>
-    <details><summary>Can I undo a cut?</summary><p>Yes. The receipt lists everything that was removed, and any removed take comes back with a tap in the editor. Cuts are made automatically and can be wrong, so check each one before you post it.</p></details>
-    <details><summary>What leaves my phone?</summary><p>Your video stays on your phone. To make a cut, the app sends only the sound of the video and a list of the times its frames appear, which contains no pictures. The <a href="privacy/">Privacy Policy</a> names who receives it and how long it is kept.</p></details>
-    <details><summary>What is an edit?</summary><p>One edit is used when a cut first opens in your editor. A failed or cancelled cut never uses one. Edits renew every month and unused edits do not carry over.</p></details>
-    <details><summary>How long can a video be?</summary><p>Up to 20 minutes.</p></details>
-    <details><summary>Is there an Android app?</summary><p>Not yet. TakesAI is on iPhone today, and Android is on the way.</p></details>
-    <details><summary>How do I cancel?</summary><p>In your Apple ID subscription settings. You keep your plan until the end of the period you paid for. <a href="support/">Support</a> has the steps.</p></details>
+<!-- The signature: a real take and its real cut (assets/demo/, built by tools/make-demo.py from the take, the engine's cut list and the word times). -->
+<section class="console-wrap" id="demo" aria-labelledby="demo-h">
+  <h2 id="demo-h" class="sr">A real take, cut by TakesAI</h2>
+  <div class="console" id="console">
+    <div class="c-top">
+      <span class="status" id="status" data-s="raw" role="status" aria-live="polite"><i></i><span id="status-t">Raw take</span></span>
+      <span class="count"><small id="count-l">Raw take</small><b id="count">0:00</b></span>
+      <button class="icon-btn" id="pause" type="button" aria-label="Pause"><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9"/></svg><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.5v9l7-4.5z"/></svg></button>
+      <button class="icon-btn" id="replay" type="button" aria-label="Cut it again"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9"/><path d="M2.5 2.5v3h3"/></svg></button>
+    </div>
+    <div class="c-body" id="cbody">
+      <div class="player-col">
+        <figure class="player">
+          <video id="vraw" src="assets/demo/raw.mp4" poster="assets/demo/poster.jpg" muted playsinline preload="auto" aria-label="Before: the raw take"></video>
+          <video id="vcut" src="assets/demo/cut.mp4" poster="assets/demo/poster.jpg" muted playsinline loop preload="auto" aria-label="After: the cut, with captions"></video>
+          <span class="tc" id="tc">0:00</span>
+          <p class="cap" id="cap" aria-hidden="true"></p>
+          <button class="snd" id="vsnd" type="button" aria-pressed="false" aria-label="Sound"><svg class="off" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 3.5 4 6H2v4h2l3 2.5zM10.5 6.5l3 3M13.5 6.5l-3 3"/></svg><svg class="on" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 3.5 4 6H2v4h2l3 2.5zM10.5 6a3 3 0 0 1 0 4M12.5 4a5.6 5.6 0 0 1 0 8"/></svg></button>
+        </figure>
+        <fieldset class="seg mode" id="mode">
+          <legend class="sr">Show the take before or after the cut</legend>
+          <label><input type="radio" name="mode" value="before">Before <b id="m-before">0:00</b></label>
+          <label><input type="radio" name="mode" value="after" checked>After <b id="m-after">0:00</b></label>
+        </fieldset>
+      </div>
+      <div class="work">
+        <div class="timeline">
+          <div class="ruler" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="track" id="track" aria-hidden="true"><div class="playhead" id="ph"></div></div>
+        </div>
+        <div class="work-b">
+          <div class="r-wrap">
+            <ol class="receipt" id="receipt" aria-label="Receipt for this cut"></ol>
+          </div>
+          <div class="work-aside">
+            <div class="legend" aria-hidden="true"><span><i></i>Kept</span><span class="x"><i></i>Cut</span></div>
+            <p class="c-note">A real take and its real cut, with its real sound.</p>
+            <p class="r-hint" id="hint"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>Tap a line to bring that part back.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="closer" aria-labelledby="closer-h">
-  <h2 id="closer-h">Film your next shoot in takes. Tap Send.</h2>
-  <p class="actions"><a class="btn btn-cut" href="beta/" data-track="download">Get the beta</a></p>
+<section class="facts" aria-label="Why it's safe to leave alone">
+  <ul>
+    <li data-r><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>Failed cuts never use an edit</li>
+    <li data-r style="--d:.06s"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v6"/></svg>Any take comes back</li>
+    <li data-r style="--d:.12s"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>Your video stays on your phone</li>
+    <li data-r style="--d:.18s"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Videos up to 20 minutes</li>
+  </ul>
+</section>
+
+<section class="sec" id="how" aria-labelledby="how-h">
+  <div class="sec-head" data-r><h2 id="how-h">Your takes in.<br>One clean cut out.</h2></div>
+  <ol class="cards3">
+    <li class="card3 spot" data-r><span class="n">1</span><h3>Film in takes</h3><p>Pause between takes, or import a video.</p><img src="assets/step-record.webp" alt="The TakesAI camera, ready to record" width="420" height="790" loading="lazy"></li>
+    <li class="card3 spot" data-r style="--d:.08s"><span class="n">2</span><h3>Tap Send. Walk away.</h3><p>You get a notification when it's ready.</p><img src="assets/step-send.webp" alt="An iPhone lock screen showing TakesAI cutting a video" width="420" height="790" loading="lazy"></li>
+    <li class="card3 spot" data-r style="--d:.16s"><span class="n">3</span><h3>Check the receipt</h3><p>Every cut, itemised. Any take comes back.</p><img src="assets/step-receipt.webp" alt="A finished cut with its receipt, listing every removed part" width="420" height="790" loading="lazy"></li>
+  </ol>
+</section>
+
+<section class="sec" id="features" aria-labelledby="feat-h">
+  <div class="sec-head" data-r><h2 id="feat-h">Everything a talking video needs</h2></div>
+  <div class="bento">
+    <article class="tile spot t-auto" data-r>
+      <h3>Auto cut</h3><p>Retakes, ums and dead air come out. Your best take stays.</p>
+      <div class="viz" aria-hidden="true">
+        <div class="mini">
+          <s style="--g:1"></s><b style="--g:4;--h:60%"></b><s style="--g:2"></s><b style="--g:5;--h:78%"></b><s style="--g:1"></s><b style="--g:3;--h:55%"></b><s style="--g:3"></s><b style="--g:6;--h:72%"></b><s style="--g:1"></s><b style="--g:4;--h:64%"></b>
+        </div>
+        <div class="mini-k"><span>English or Spanish</span><span>Best take kept</span></div>
+      </div>
+    </article>
+    <article class="tile spot t-caps" data-r style="--d:.06s">
+      <h3>Word-by-word captions</h3><p>On every cut. Pick a style in the editor.</p>
+      <div class="viz">
+        <div class="cap-frame" id="capframe" data-style="highlight">
+          <video id="capvid" src="assets/caps.mp4" poster="assets/caps-poster.jpg" muted autoplay loop playsinline preload="auto" aria-label="A take playing with word-by-word captions. Tap to pause."></video>
+          <p class="words" id="capwords" aria-hidden="true"></p>
+          <button class="snd" id="capsnd" type="button" aria-pressed="false" aria-label="Sound"><svg class="off" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 3.5 4 6H2v4h2l3 2.5zM10.5 6.5l3 3M13.5 6.5l-3 3"/></svg><svg class="on" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 3.5 4 6H2v4h2l3 2.5zM10.5 6a3 3 0 0 1 0 4M12.5 4a5.6 5.6 0 0 1 0 8"/></svg></button>
+        </div>
+        <div class="styles" role="radiogroup" aria-label="Caption style">
+          <button type="button" role="radio" aria-checked="true" data-style="highlight">Highlight</button><button type="button" role="radio" aria-checked="false" data-style="yellow">Yellow word</button><button type="button" role="radio" aria-checked="false" data-style="box">Box</button><button type="button" role="radio" aria-checked="false" data-style="receipt">Receipt</button>
+        </div>
+      </div>
+    </article>
+    <article class="tile spot t-batch" data-r>
+      <h3>Batch</h3><p>Send up to 20 videos at once on Pro and Ultimate.</p>
+      <div class="viz" aria-hidden="true"><div class="grid20" id="grid20"></div><p class="g-k">20 videos in, 20 cuts out</p></div>
+    </article>
+    <article class="tile spot t-edit" data-r style="--d:.06s">
+      <h3>A full editor</h3><p>Trim, split and reorder. Add text, overlays, sound and voiceover.</p>
+      <div class="viz"><div class="ed-ui"><img src="assets/editor-ui.webp" alt="The TakesAI editor: the timeline with caption blocks, Add audio and Add text, and the Cut, Split, Duplicate, Delete, Captions, Overlay and Volume tools" width="720" height="545"></div></div>
+    </article>
+    <article class="tile spot t-priv" data-r>
+      <h3>Private by design</h3><p>Your video never leaves your phone. Only its sound and frame times are sent.</p>
+      <div class="viz flow" aria-hidden="true">
+        <div class="node"><div class="box"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></div><span>Video stays here</span></div>
+        <div class="pipe"><span class="pkts"><span class="pkt">Sound</span><span class="pkt">Frame times</span></span></div>
+        <div class="node"><div class="box"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></div><span>The cut comes back</span></div>
+      </div>
+    </article>
+    <article class="tile spot t-share" data-r style="--d:.06s">
+      <h3>Save or share</h3><p>To Photos, TikTok or Instagram.</p>
+      <div class="viz" aria-hidden="true">
+        <div class="toast"><span class="ok"><svg viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7"/></svg></span><span><b>Saved to Photos</b><small>Cut 1 · 0:12</small></span></div>
+        <div class="dests"><span><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="m3 16 5-5c.93-.89 2.07-.89 3 0l5 5"/><path d="m14 14 1-1c.93-.89 2.07-.89 3 0l3 3"/></svg>Photos</span><span><svg viewBox="0 0 24 24"><path d="M21 7.92v4.03A9.95 9.95 0 0 1 16 10v4.5a6.5 6.5 0 1 1-8-6.33v4.33a2.5 2.5 0 1 0 4 2V3h4.08A6 6 0 0 0 21 7.92z"/></svg>TikTok</span><span><svg viewBox="0 0 24 24"><path d="M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0"/><path d="M16.5 7.5v.01"/></svg>Instagram</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="sec" id="cost" aria-labelledby="cost-h">
+  <div class="sec-head" data-r><h2 id="cost-h">What editing costs</h2></div>
+  <div class="cost" data-r>
+    <div class="bar-row"><span class="who">Hire an editor</span><div class="bar"><i style="--w:100%"></i></div><span class="amt">$400+ a month</span></div>
+    <div class="bar-row me"><span class="who">TakesAI</span><div class="bar"><i style="--w:5%"></i></div><span class="amt">From $19.99 a month</span></div>
+    <p class="cost-note">Editors typically charge $8–15 a video. Bars to scale.</p>
+  </div>
+</section>
+
+<!-- Plans: the form opens the checkout with the plan chosen (?plan=&period=, contracts/checkout-api.md). Works without script; the
+     "how many a day" buttons need it. Buying links carry not-app (pages the app opens show no way to pay outside it). -->
+<section class="sec" id="pricing" aria-labelledby="price-h">
+  <div class="price-card" data-r>
+    <h2 id="price-h"><span class="if-trial"><span class="nw">Pick a plan.</span> <span class="nw">Pay nothing today.</span></span><span class="if-no-trial">Plans</span></h2>
+    <p class="lead if-trial">Three days free, or longer with a creator's code.</p>
+    <form class="picker" id="picker" action="checkout/" method="get">
+      <div class="pick">
+        <p class="q" id="q">How many videos do you post a day?</p>
+        <div class="chips" role="group" aria-labelledby="q">
+          <button type="button" data-plan="starter" aria-pressed="false">1 to 3</button>
+          <button type="button" data-plan="pro" aria-pressed="true">Up to 10</button>
+          <button type="button" data-plan="ultimate" aria-pressed="false">More than 10</button>
+        </div>
+        <fieldset class="period">
+          <legend class="sr">Billing period</legend>
+          <span class="thumb" aria-hidden="true"></span>
+          <label><input type="radio" name="period" value="monthly" checked>Monthly</label>
+          <label><input type="radio" name="period" value="yearly">Yearly <span class="save"><span aria-hidden="true">−33%</span><span class="sr">, about 33% less</span></span></label>
+        </fieldset>
+        <fieldset class="plans">
+          <legend class="sr">Plan</legend>
+          <label class="plan"><input type="radio" name="plan" value="starter"><span><span class="nm">Starter</span><span class="ed">100 edits a month</span></span><span class="pr" data-m="19.99" data-y="159.99"><span class="v">$19.99</span><small>a month</small></span></label>
+          <label class="plan"><input type="radio" name="plan" value="pro" checked><span><span class="nm">Pro</span><span class="ed">300 edits a month</span></span><span class="pr" data-m="49.99" data-y="399.99"><span class="v">$49.99</span><small>a month</small></span></label>
+          <label class="plan"><input type="radio" name="plan" value="ultimate"><span><span class="nm">Ultimate</span><span class="ed">Unlimited edits</span></span><span class="pr" data-m="89.99" data-y="719.99"><span class="v">$89.99</span><small>a month</small></span></label>
+        </fieldset>
+      </div>
+      <div class="buy">
+        <h3 class="incl-h">What you get with <span id="incl-name">Pro</span></h3>
+        <ul class="incl" id="incl"><li>300 edits a month</li><li>Auto cut and word-by-word captions</li><li>Camera, editor and exports</li><li>Batch: up to 20 videos at once</li><li>Overlap audio</li></ul>
+        <div class="if-trial not-app">
+          <div class="r-wrap due-wrap"><ul class="receipt due-r" aria-label="What you pay">
+            <li><span>Due today</span><span>$0.00</span></li>
+            <li class="total"><span id="due-when">After the trial</span><span id="due-p">$49.99/mo</span></li>
+          </ul></div>
+          <p class="due-note">Plus any tax. Cancel before then and pay nothing.</p>
+          <button class="btn btn-red btn-lg" type="submit">Start your free trial <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+          <a class="code" href="checkout/">Got a creator's code? It goes in at checkout.</a>
+        </div>
+        <p class="if-no-trial">Subscribe in the app. Cancel anytime in your Apple ID settings.</p>
+        <p class="only-app">Subscribe in the app.</p>
+        <p class="fine">One free trial per person. <a href="terms/">Terms</a></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="sec" id="more" aria-label="Android and the affiliate program">
+  <div class="duo">
+    <div id="android" data-r><h3>Android</h3><p>In a Google Play test now. <a href="beta/#android">Join it from the beta page.</a></p></div>
+    <div class="if-trial not-app" data-r style="--d:.06s"><h3>Earn with TakesAI</h3><p>Earn 30% of what the people you refer pay in their first year. <a href="earn/">See the program</a></p></div>
+  </div>
+</section>
+
+<section class="sec" id="faq" aria-labelledby="faq-h">
+  <div class="faq-wrap">
+    <div data-r><h2 id="faq-h" class="big">Questions</h2><p>Still stuck? <a href="mailto:support@takesai.app">support@takesai.app</a></p></div>
+    <div class="faq" data-r style="--d:.06s">
+      <details><summary>What does TakesAI cut?</summary><p>Retakes, ums and dead air. It keeps your best take and adds captions.</p></details>
+      <details><summary>Can I undo a cut?</summary><p>Yes, any removed take comes back with a tap. Check each cut before you post.</p></details>
+      <details><summary>What leaves my phone?</summary><p>Only its sound and a list of frame times, never the video. Details in the <a href="privacy/">Privacy Policy</a>.</p></details>
+      <details><summary>What is an edit?</summary><p>One cut opened in your editor. Failed cuts use none, and unused edits don't roll over.</p></details>
+      <details><summary>How long can a video be?</summary><p>Up to 20 minutes.</p></details>
+      <details><summary>Is there an Android app?</summary><p>It's in a Google Play test now. The <a href="beta/#android">beta page</a> has the steps.</p></details>
+      <details><summary>How do I cancel?</summary><p><a href="support/">Support</a> has the steps for App Store and web plans.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="final" aria-labelledby="final-h">
+  <h2 id="final-h" data-r>Film your next shoot in takes. <span>Tap Send.</span></h2>
+  <a class="btn btn-red btn-lg" href="beta/" data-track="download" data-r style="--d:.1s">Get the beta <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
 </section>
 </main>
 <footer class="site-footer">
-  <a href="privacy/">Privacy</a> · <a href="terms/">Terms</a> · <a href="support/">Support</a><span class="if-trial not-app"> · <a href="earn/">Earn with TakesAI</a></span> · <a href="privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="./"><picture><source srcset="assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="#how">How it works</a></li><li><a href="#pricing">Pricing</a></li><li><a href="beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="earn/">Affiliates</a></li><li><a href="earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="support/">Support</a></li><li><a href="privacy/">Privacy</a></li><li><a href="terms/">Terms</a></li><li><a href="privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 </body>
 </html>

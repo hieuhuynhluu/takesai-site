@@ -1,87 +1,155 @@
-/* The Cut Receipt (docs/design/foundation.md), kept simple: one paper strip, two inks. */
+/* takesai.app (M-86): the premium look, in a light and a dark palette that follow the device.
+   Geist for words, Geist Mono for timecodes and figures, both served from this site. Red marks the main action
+   and anything cut; paper is used only for receipts. The home page adds its own sections in assets/home.css. */
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
 :root {
-  --paper: #F4F4F0;
-  --ink: #151515;
-  --ink-faded: #6B6B66;
-  --cut: #B81D32;
-  --page: #FFFFFF;
-  --mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --bg: #F6F6F7; --bg-1: #FBFBFC; --panel: #FFFFFF; --panel-2: #FFFFFF; --panel-3: #EFEFF1; --raised: #FFFFFF;
+  --fill: rgb(14 14 16 / 0.035); --fill-2: rgb(14 14 16 / 0.065); --well: rgb(14 14 16 / 0.05);
+  --line: rgb(14 14 16 / 0.08); --line-2: rgb(14 14 16 / 0.13); --line-3: rgb(14 14 16 / 0.24);
+  --text: #0E0E10; --text-2: #55555B; --text-3: #6B6B71; --dim: #8B8B91;
+  --red: #C8243A; --red-btn: #D62A41; --red-btn-2: #BD1F36; --red-glow: rgb(214 42 65 / 0.16); --red-shadow: rgb(214 42 65 / 0.28);
+  --paper: #F4F4F0; --ink: #151515; --cut: #B81D32;
+  --bar: rgb(14 14 16 / 0.72);
+  --nav-bg: rgb(246 246 247 / 0.8); --sheet-bg: rgb(246 246 247 / 0.97);
+  --key: rgb(255 255 255 / 0.95); --card-hi: rgb(14 14 16 / 0.03);
+  --shadow: 0 1px 2px rgb(14 14 16 / 0.06), 0 12px 32px -14px rgb(14 14 16 / 0.18);
+  --shadow-lg: 0 1px 2px rgb(14 14 16 / 0.05), 0 40px 100px -40px rgb(14 14 16 / 0.28);
+  --phone-shadow: drop-shadow(0 26px 34px rgb(14 14 16 / 0.22));
+  --grain: 0.03;
+  --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --max: 1200px; --read: 720px;
   color-scheme: light;
+  interpolate-size: allow-keywords;
 }
-/* The receipt stays paper in dark mode, like a physical object; only the page around it darkens. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --page: #000000; color-scheme: dark; }
+  :root:not([data-theme="light"]) {
+    --bg: #0A0A0B; --bg-1: #0D0D0F; --panel: #121215; --panel-2: #17171B; --panel-3: #1E1E23; --raised: #24242A;
+    --fill: rgb(255 255 255 / 0.04); --fill-2: rgb(255 255 255 / 0.08); --well: rgb(0 0 0 / 0.35);
+    --line: rgb(255 255 255 / 0.07); --line-2: rgb(255 255 255 / 0.12); --line-3: rgb(255 255 255 / 0.22);
+    --text: #F4F4F0; --text-2: #A8A8AD; --text-3: #8F8F95; --dim: #6B6B71;
+    --red: #FF5A6A; --red-btn: #D92D44; --red-btn-2: #C4263D; --red-glow: rgb(255 90 106 / 0.2); --red-shadow: rgb(0 0 0 / 0.55);
+    --bar: rgb(244 244 240 / 0.78);
+    --nav-bg: rgb(10 10 11 / 0.72); --sheet-bg: rgb(10 10 11 / 0.96);
+    --key: rgb(255 255 255 / 0.1); --card-hi: rgb(255 255 255 / 0.07);
+    --shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 50px -24px rgb(0 0 0 / 0.8);
+    --shadow-lg: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 50px 140px -40px rgb(0 0 0 / 0.9);
+    --phone-shadow: drop-shadow(0 30px 40px rgb(0 0 0 / 0.6));
+    --grain: 0.045;
+    color-scheme: dark;
+  }
 }
-:root[data-theme="dark"] { --page: #000000; color-scheme: dark; }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0;
-  background: var(--page);
-  color: var(--ink);
-  font: 1rem/1.6 var(--sans);
-  padding: 24px 16px 48px;
-}
-.strip {
-  max-width: 720px;
-  margin: 0 auto;
-  background: var(--paper);
-  padding: 28px 22px 40px;
-  border-top: 6px solid var(--ink); /* printer slot */
-  position: relative;
-  overflow-wrap: anywhere;
-}
-/* perforated tear edge */
-.strip::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: -10px; height: 10px;
-  background: radial-gradient(circle at 10px 0, transparent 6px, var(--paper) 6.5px) 0 0 / 20px 10px repeat-x;
-  transform: scaleY(-1);
-}
-@media (min-width: 600px) { .strip { padding: 40px 48px 56px; } body { padding-top: 48px; } }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 88px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+::selection { background: var(--text); color: var(--bg); }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: var(--line-3); }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-weight: 600; text-wrap: balance; color: var(--text); }
+p { text-wrap: pretty; }
+p, ul, ol { margin: 0 0 16px; }
+ul, ol { padding-left: 1.3em; }
+li { margin-bottom: 8px; }
+li::marker { color: var(--text-3); }
+strong { font-weight: 600; color: var(--text); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.nw { display: inline-block; } /* a heading of two sentences breaks between them */
 
-.brand {
-  font: 800 0.8rem/1 var(--mono);
-  font-stretch: 112.5%;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--ink);
-}
-nav { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; margin-bottom: 28px; }
-nav .links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; }
-nav .links a { font: 400 0.75rem/1.8 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faded); }
-nav .links a[aria-current="page"] { color: var(--ink); text-decoration-thickness: 2px; }
+/* Film grain, very faint: the edit bay. */
+body::after { content: ""; position: fixed; inset: -50%; z-index: 90; pointer-events: none; opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-h1, h2, h3 { font-family: var(--mono); font-stretch: 112.5%; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.3; }
-h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px; }
-h2 { font-size: 1rem; font-weight: 700; margin: 0 0 12px; padding-top: 24px; border-top: 2px dashed var(--ink); }
-h3 { font-size: 0.85rem; font-weight: 700; margin: 20px 0 8px; }
-section { margin-top: 28px; scroll-margin-top: 16px; }
-.meta { font: 400 0.75rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 20px; }
-p, ul, ol { margin: 0 0 12px; }
-ul, ol { padding-left: 1.25em; }
-li { margin-bottom: 6px; }
-a { color: var(--ink); text-underline-offset: 3px; }
-a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-strong { font-weight: 650; }
-.lede { font-size: 1.05rem; }
+/* ---------- Buttons: red is the main action. ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 22px; border-radius: 999px; border: 0;
+  font: 550 15px/1.2 var(--sans); letter-spacing: -0.005em; text-decoration: none; text-align: center; cursor: pointer; white-space: nowrap;
+  color: var(--bg); background: var(--text); transition: transform 0.4s var(--ease), background-color 0.25s, box-shadow 0.4s var(--ease), color 0.25s; }
+.btn:hover { transform: translateY(-1px); }
+.btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.4s var(--ease); }
+.btn:hover svg { transform: translateX(3px); }
+.btn-cut, .btn-red { color: #FFFFFF; background: var(--red-btn); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08) inset, 0 10px 24px -12px var(--red-shadow); }
+.btn-cut:hover, .btn-red:hover { background: var(--red-btn-2); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12) inset, 0 14px 30px -12px var(--red-shadow); }
+.btn-quiet, .btn-ghost { color: var(--text); background: var(--fill); box-shadow: inset 0 0 0 1px var(--line-2); }
+.btn-quiet:hover, .btn-ghost:hover { background: var(--fill-2); box-shadow: inset 0 0 0 1px var(--line-3); }
+.btn-ghost:hover svg { transform: translateY(2px); }
+.btn-sm { min-height: 36px; padding: 0 16px; font-size: 14px; }
+.btn-lg { min-height: 54px; padding: 0 28px; font-size: 16px; }
+button.btn:disabled { cursor: wait; opacity: 0.6; transform: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
 
-/* Receipt line items: label left, value right, wrap instead of truncating. */
-.lines { list-style: none; padding: 0; margin: 0 0 16px; font: 400 0.8rem/1.5 var(--mono); }
-.lines li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; padding: 8px 0; border-bottom: 1px dashed var(--ink-faded); margin: 0; }
-.lines li span:first-child { font-weight: 700; text-transform: uppercase; }
-@media (min-width: 600px) { .lines li span:last-child { text-align: right; margin-left: auto; max-width: 60%; } }
-.lines li.cut span:first-child { color: var(--cut); }
-.lines li.total { border-bottom: 0; border-top: 2px dashed var(--ink); font-weight: 800; }
+/* ---------- Header: glass over the page. ---------- */
+.site-header { position: fixed; inset: 0 0 auto; z-index: 60; background: var(--nav-bg); -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px); border-bottom: 1px solid var(--line); }
+.site-header nav { max-width: var(--max); margin: 0 auto; padding: 0 24px; min-height: 64px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 28px; }
+.brand { display: block; color: var(--text); }
+.brand img { display: block; height: 20px; width: auto; }
+.site-header .links { display: flex; flex-wrap: wrap; gap: 0 24px; margin-left: auto; }
+.site-header .links a { font-size: 14px; color: var(--text-2); text-decoration: none; padding: 10px 0; transition: color 0.2s; }
+.site-header .links a:hover, .site-header .links a[aria-current="page"] { color: var(--text); }
+@media (max-width: 420px) { .site-header nav { gap: 4px 16px; } .site-header .links { gap: 0 14px; } .site-header .links a { font-size: 13.5px; } }
 
-.contact { font-family: var(--mono); font-size: 0.9rem; }
-footer a { color: inherit; }
-footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono); color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { color: #9A9A94; } }
+/* ---------- Inner pages: a reading column. ---------- */
+.page { position: relative; max-width: calc(var(--read) + 48px); margin: 0 auto; padding: 128px 24px 112px; overflow-wrap: break-word; isolation: isolate; }
+.page::before { content: ""; position: absolute; inset: 0 0 auto; height: 520px; z-index: -1; pointer-events: none; background: radial-gradient(40% 70% at 50% 0%, var(--key), transparent 70%); }
+.page h1 { font-size: clamp(2.5rem, 7vw, 3.75rem); line-height: 1.02; letter-spacing: -0.04em; margin: 0 0 16px; }
+.page h2 { font-size: 1.5rem; line-height: 1.2; letter-spacing: -0.025em; margin: 0 0 14px; }
+.page h3 { font-size: 1.125rem; line-height: 1.35; letter-spacing: -0.01em; margin: 28px 0 8px; }
+.page section { margin-top: 64px; scroll-margin-top: 96px; }
+.page p, .page li { color: var(--text-2); }
+.meta { font-size: 14px; color: var(--text-3); margin: 0 0 32px; }
+.lede { font-size: 1.25rem; line-height: 1.5; color: var(--text-2); letter-spacing: -0.01em; }
+.contact { font-weight: 600; font-size: 1.125rem; }
+.contact a { color: var(--text); }
+.redeem-get { margin: 12px 0 6px; } /* the button sits on its own line under its step */
+.steps .btn { margin: 4px 0 12px; }
+
+/* Facts: label on the left, value on the right, hairlines between. */
+.lines { list-style: none; padding: 0; margin: 0 0 24px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.lines li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 24px; margin: 0; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.page .lines li span:first-child, .lines li span:first-child { font-weight: 550; color: var(--text); }
+.lines li span:last-child { color: var(--text-2); }
+@media (min-width: 600px) { .lines li span:last-child { text-align: right; margin-left: auto; max-width: 62%; } }
+.lines li.cut span { color: var(--red); }
+.lines li.total span { color: var(--text); font-weight: 650; }
+
+/* Steps: the order is the information. */
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.steps > li { counter-increment: step; position: relative; margin: 0; padding: 0 0 24px 52px; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--line-2); font: 600 13px/1 var(--mono); color: var(--text-2); }
+.steps h3 { margin: 4px 0 4px; }
+.steps p { margin: 0 0 12px; }
+
+/* Questions: native disclosure, works without JavaScript. */
+.faq details { border-bottom: 1px solid var(--line); }
+.faq details:first-child { border-top: 1px solid var(--line); }
+.faq summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px 0; cursor: pointer; list-style: none; font-size: 17px; font-weight: 550; letter-spacing: -0.012em; color: var(--text); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: ""; flex: none; width: 14px; height: 14px; background:
+  linear-gradient(var(--text-2), var(--text-2)) center / 14px 1.5px no-repeat, linear-gradient(var(--text-2), var(--text-2)) center / 1.5px 14px no-repeat; transition: transform 0.45s var(--ease); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { padding: 0 40px 22px 0; color: var(--text-2); max-width: 52ch; }
+.faq details::details-content { height: 0; overflow: clip; transition: height 0.5s var(--ease), content-visibility 0.5s allow-discrete; }
+.faq details[open]::details-content { height: auto; }
+
+/* ---------- Footer ---------- */
+.site-footer { border-top: 1px solid var(--line); color: var(--text-3); }
+.foot { max-width: var(--max); margin: 0 auto; padding: 56px 24px 40px; display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 40px; }
+.foot p { margin: 14px 0 0; font-size: 14px; color: var(--text-3); max-width: 28ch; }
+.foot h4 { margin: 0 0 14px; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+.foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.foot li { margin: 0; }
+.foot a { font-size: 14px; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+.foot a:hover { color: var(--text); }
+.foot .brand img { height: 20px; }
+.foot-b { max-width: var(--max); margin: 0 auto; padding: 22px 24px 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 20px; font-size: 13px; }
+@media (max-width: 760px) { .foot { grid-template-columns: 1fr 1fr; } .foot > div:first-child { grid-column: 1 / -1; } .foot-b { flex-direction: column; } }
 
 /* ---- Marketing site skeleton (spec 007, contracts/site-interfaces.md) ---- */
 
@@ -98,39 +166,46 @@ footer { max-width: 720px; margin: 28px auto 0; font: 400 0.7rem/1.6 var(--mono)
 .if-board { display: none !important; }
 /* .if-no-board { display: none !important; } */
 
-/* Actions: one primary, one quiet. */
-.btn {
-  display: inline-block;
-  font: 700 0.85rem/1 var(--mono);
-  font-stretch: 112.5%;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--paper);
-  background: var(--ink);
-  border: 2px solid var(--ink);
-  padding: 14px 18px;
+/* ---------- Plan pickers (home pricing and checkout) ---------- */
+/* The period: a segmented control in a well. */
+.seg, .period { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 4px; border-radius: 16px; background: var(--well); box-shadow: inset 0 0 0 1px var(--line); margin: 0 0 14px; }
+.seg label, .period label { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 46px; padding: 4px 8px; border-radius: 12px; cursor: pointer; font-weight: 550; font-size: 15px; line-height: 1.2; color: var(--text-2); transition: color 0.3s, background-color 0.3s; }
+.seg label:has(:checked), .period label:has(:checked) { color: var(--text); }
+.seg label:has(:checked) { background: var(--raised); box-shadow: inset 0 0 0 1px var(--line-2), 0 6px 16px -8px rgb(0 0 0 / 0.35); }
+.seg small { font-size: 12px; font-weight: 450; color: var(--text-3); }
+.seg input, .period input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg:has(:focus-visible), .period:has(:focus-visible) { outline: 2px solid var(--text); outline-offset: 3px; }
+/* Plan rows; the chosen one is ringed in red. */
+fieldset.plans { display: grid; gap: 10px; margin-bottom: 20px; }
+.plan { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 14px; padding: 16px 18px; border-radius: 18px; cursor: pointer;
+  background: var(--fill); box-shadow: inset 0 0 0 1px var(--line-2); transition: box-shadow 0.35s var(--ease), background-color 0.35s; }
+.plan:hover { background: var(--fill-2); }
+.plan input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 0; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-3); transition: box-shadow 0.35s var(--ease); }
+.plan input:checked { box-shadow: inset 0 0 0 6px var(--red-btn); }
+.plan:has(:checked) { background: color-mix(in srgb, var(--red-btn) 6%, var(--fill)); box-shadow: inset 0 0 0 1.5px var(--red-btn); }
+.plan:has(:focus-visible) { outline: 2px solid var(--text); outline-offset: 3px; }
+.plan input:focus-visible { outline: none; }
+/* The period switch, without script: .m shows monthly figures, .y yearly ones. */
+.picker .y, .picker:has([name="period"][value="yearly"]:checked) .m { display: none; }
+.picker:has([name="period"][value="yearly"]:checked) .y { display: inline; }
+
+/* ---------- The receipt: paper, monospace figures, a dashed rule above the total, a torn edge. ---------- */
+/* The shadow sits on the wrapper, because the tear is a mask, which would clip a shadow on the slip itself. */
+.receipt-wrap, .r-wrap { filter: drop-shadow(0 14px 22px rgb(0 0 0 / 0.22)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.16)); }
+.receipt { --tear: 7px; list-style: none; margin: 0; padding: 16px 16px calc(var(--tear) + 14px); background: var(--paper); color: var(--ink);
+  font: 500 12.5px/1.45 var(--mono); text-transform: uppercase; letter-spacing: 0.01em; font-variant-numeric: tabular-nums;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--tear)) 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--tear)) 100%; }
+.receipt li { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 3px 0; color: var(--ink); }
+.receipt li:not(.due) span { white-space: nowrap; }
+.receipt li.cut, .receipt .x { color: var(--cut); }
+.receipt li.total { margin-top: 8px; padding-top: 10px; border-top: 1.5px dashed var(--ink); font-weight: 800; font-size: 16px; }
+
+/* Scroll reveal, from visible defaults: script hides only what it will reveal, and never with Reduce Motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-r] { opacity: 0; transform: translateY(24px); }
+  .js [data-r].in { opacity: 1; transform: none; transition: opacity 0.8s var(--ease) var(--d, 0s), transform 0.9s var(--ease) var(--d, 0s); }
 }
-.btn:hover { background: #000; border-color: #000; }
-.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.btn-quiet { color: var(--ink); background: transparent; }
-.btn-quiet:hover { background: var(--ink); color: var(--paper); }
-/* The one primary action of a Persuade page is red: red means "cut" (docs/design/foundation.md, Color). */
-.btn-cut { background: var(--cut); border-color: var(--cut); color: #fff; }
-.btn-cut:hover { background: #9A1528; border-color: #9A1528; }
-.btn-cut:focus-visible { outline-color: var(--ink); }
-
-/* No double rule above a receipt total. */
-.lines li:has(+ .total) { border-bottom: 0; }
-
-/* The Torn Tile lockup (docs/design/logo/) replaces the text brand; the strip stays paper in both modes, so the light version always applies. */
-.brand img { display: block; height: 22px; width: auto; }
-
-/* Standard footer: the existing footer rule, links kept whole on narrow screens. */
-.site-footer a { white-space: nowrap; }
-footer a:focus-visible { outline-color: currentColor; } /* an ink ring vanishes on the dark ground */
-
-/* Light mode: a faint ink edge keeps the paper strip and its perforation visible on white (foundation: 14% ink hairline). */
-.strip { filter: drop-shadow(0 0 0.75px rgb(21 21 21 / 0.45)); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .strip { filter: none; } }
-:root[data-theme="dark"] .strip { filter: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

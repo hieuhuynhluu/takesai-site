@@ -7,21 +7,21 @@
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <title>Start your TakesAI trial</title>
 <meta name="description" content="Pick a TakesAI plan and start your free trial: $0 today, then the plan's price unless you cancel.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..800&display=swap">
+<link rel="preload" href="../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../style.css">
 <link rel="stylesheet" href="checkout.css">
 <script src="../assets/site.js" defer></script>
 <script src="checkout.js" defer></script>
 </head>
 <body class="checkout">
-<main class="strip">
-<nav aria-label="Main"><a class="brand" href="../"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></a> <span class="links"><a href="../#plans">Plans</a> <a href="../support/">Support</a></span></nav>
+<header class="site-header"><nav aria-label="Main"><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="102" height="22"></picture></a> <span class="links"><a href="../#plans">Plans</a> <a href="../support/">Support</a></span></nav></header>
+<main class="page">
 
 <h1>Start your free trial</h1>
 
-<form id="checkout">
+<form id="checkout" class="picker">
   <!-- Black Friday (spec 012): shown by checkout.js only while SALE is on and inside the sale's times. -->
   <p class="sale-note" id="sale-note" hidden><strong>Black Friday: 50% off your first year</strong> on yearly plans. <span id="countdown" role="timer"></span></p>
 
@@ -65,10 +65,10 @@
       <p class="code-msg" id="code-msg" role="status" aria-live="polite"></p>
     </div>
 
-    <ul class="lines">
+    <div class="r-wrap"><ul class="receipt">
       <li><span id="trial-label">Free trial</span><span id="trial-days">3 days</span></li>
       <li class="total due" id="due" aria-live="polite"><strong id="due-now">$0 today.</strong> <span id="due-then"></span></li>
-    </ul>
+    </ul></div>
 
     <label class="consent" id="consent" hidden><input type="checkbox" name="renews" required> I understand my plan renews automatically until I cancel.</label>
     <button class="btn btn-cut" id="start" type="submit" data-track="checkout_start" disabled hidden>Start free trial</button>
@@ -97,7 +97,13 @@
 </ul>
 </main>
 <footer class="site-footer">
-  <a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a><span class="if-trial not-app"> · <a href="../earn/">Earn with TakesAI</a></span> · <a href="../privacy-choices/">Your privacy choices</a>
+  <div class="foot">
+    <div><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../#how">How it works</a></li><li><a href="../#pricing">Pricing</a></li><li><a href="../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../earn/">Affiliates</a></li><li><a href="../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../support/">Support</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../terms/">Terms</a></li><li><a href="../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
 </footer>
 </body>
 </html>
