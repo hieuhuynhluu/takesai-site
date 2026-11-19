@@ -78,5 +78,9 @@
 .plan .y s { color: var(--text-3); font-weight: 400; }
 /* During the sale the price line is longer, so it sits under the plan name instead of beside it. */
 .sale-on .plan .price { grid-column: 2 / -1; grid-row: auto; text-align: left; }
+/* A free code (M-89): Ultimate alone, its price struck through and "Free" under it. */
+.free-on .plan .price b, .free-on .plan .price small { text-decoration: line-through; color: var(--text-3); }
+.free-on .plan .price::after { content: "Free"; display: block; margin-top: 6px; font: 600 22px/1 var(--mono); letter-spacing: -0.03em; color: var(--text); }
 .sale-y .trial-only, .sale-only { display: none; }
 .sale-y .sale-only { display: list-item; }
+.free-only, .free-y .fine li:not(.free-only) { display: none; } .free-y .free-only { display: list-item; } /* M-89 */

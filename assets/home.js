@@ -42,7 +42,7 @@
     var undo = '<svg class="undo" viewBox="0 0 16 16"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>';
     var redo = '<svg class="redo" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><path d="M14 3 5.5 10.5M10 10l4 3M5.5 5.5 8 8"/></svg>';
     var play = '<svg class="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></svg>';
-    var D, RAW_S, SEGS, CUTS, WAVE, STEP, drawnW = 0, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
+    var D, RAW_S, SEGS, CUTS, WAVE, STEP, FRAMES, drawnW = 0, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
     var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
 
     fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
@@ -53,12 +53,13 @@
 
     function build(d) {
       D = d.duration; RAW_S = d.rawS; SEGS = d.segments; CUTS = SEGS.filter(function (sg) { return sg.cut; });
-      WAVE = d.wave; STEP = d.waveStep;
+      WAVE = d.wave; STEP = d.waveStep; FRAMES = d.stripFrames;
+      con.style.setProperty('--n', FRAMES); con.style.setProperty('--fa', d.stripAspect); // the filmstrip sprite (home.css .strip i)
       receipt.innerHTML = '<li class="head"><span>Your video</span><span>' + mm(RAW_S) + '</span></li>';
       SEGS.forEach(function (sg) {
         var len = sg.e - sg.s, el = document.createElement('div');
         el.className = 'clip'; el.style.setProperty('--g', len.toFixed(3));
-        el.innerHTML = '<div class="wave"></div><div class="strip" style="--k:' + Math.floor(sg.s * 2) + '"></div>';
+        el.innerHTML = '<div class="wave"></div><div class="strip"></div>';
         track.insertBefore(el, ph); sg.el = el;
         el.addEventListener('click', function () { seekTo(sg); });
         if (!sg.cut) return;
@@ -82,6 +83,9 @@
       });
       $('m-before').textContent = mm(RAW_S);
       waves(); new ResizeObserver(waves).observe(track); // a window narrowed or a phone turned redraws the bars to fit
+      // Each part's frames follow its width as it grows or closes up (After, a restore, a resize).
+      var ro = new ResizeObserver(function (es) { es.forEach(function (e) { SEGS.forEach(function (sg) { if (sg.el === e.target) strip(sg); }); }); });
+      SEGS.forEach(function (sg) { ro.observe(sg.el); });
       labels();
       if (visible) begin();
     }
@@ -100,6 +104,15 @@
         }
         sg.el.firstChild.innerHTML = w;
       });
+    }
+
+    // Frames by time, like the waveform: about one frame per frame-width of the part, each the frame at its tile's middle.
+    function strip(sg) {
+      var el = sg.el.lastChild, fw = el.clientHeight * parseFloat(con.style.getPropertyValue('--fa')), len = sg.e - sg.s, out = '';
+      if (!fw) return;
+      var n = Math.max(1, Math.round(sg.el.clientWidth / fw));
+      for (var i = 0; i < n; i++) out += '<i style="--f:' + Math.min(FRAMES - 1, Math.round((sg.s + len * (i + 0.5) / n) * 2)) + '"></i>';
+      if (el.innerHTML !== out) el.innerHTML = out;
     }
 
     // ---- time and geometry ----

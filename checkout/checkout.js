@@ -6,8 +6,9 @@
 const CHECKOUT_BASE = "https://beoxhscgtofgsizqzixz.supabase.co/functions/v1";
 const CHECKOUT_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/create-checkout";
 const STATUS_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/checkout-status";
-// GET ?code= -> { ok: true, trial_days, trial_edits } or { ok: false, error: "bad_code" }. A 404 (not deployed) or a
-// network error leaves the code for create-checkout to check, as before.
+// GET ?code= -> { ok: true, trial_days, trial_edits }, { ok: true, free: true, plan: "ultimate" } (a free code, M-89: TVAFREE)
+// or { ok: false, error: "bad_code" | "code_used_up" }. A 404 (not deployed) or a network error leaves the code for
+// create-checkout to check, as before.
 const CHECK_ENDPOINT = CHECKOUT_BASE && CHECKOUT_BASE + "/check-code";
 // Until 1.0.0 is on the App Store, the fallback goes to the beta page (M-84); at release: "https://apps.apple.com/app/id6833252992".
 const APP_STORE = "/beta/";
@@ -30,7 +31,8 @@ function checkoutPage() {
   const form = $("checkout"), start = $("start"), msg = $("msg"), code = $("code"), applyBtn = $("apply"), codeMsg = $("code-msg");
   // ?trial=0 is the reused-trial email's link (contract section 5): the plan without a trial.
   let busy = false, noTrial = params.get("trial") === "0", shown = "";
-  let applied = null; // the code as last applied: { code, days, edits }, or { code, unverified: true } when it can't be checked here
+  const h1 = document.querySelector("h1"), h1Text = h1.textContent, title = document.title; // the page's own heading
+  let applied = null; // the code as last applied: { code, days, edits }, { code, free: true }, or { code, unverified: true } when it can't be checked here
 
   // ?plan= and ?period= preselect; a value matching no radio leaves the default checked.
   for (const name of ["plan", "period"]) if (params.get(name)) form.elements[name].value = params.get(name);
@@ -46,14 +48,23 @@ function checkoutPage() {
     const yearly = pick("period") === "yearly";
     const price = row.querySelector(yearly ? ".y b" : ".m b").textContent;
     const per = yearly ? "a year" : "a month";
-    const saleYearly = sale && yearly;
+    const free = !!(applied && applied.free), saleYearly = sale && yearly && !free;
     let days, now = "$0 today.", then;
-    if (saleYearly) { // the sale price wins over a code's or link's trial (decision 12)
+    // A free code (M-89): Ultimate only, free for life, no period and no renewal box; it wins over a sale.
+    form.classList.toggle("free-on", free);
+    form.querySelector(".seg").hidden = free;
+    for (const label of form.querySelectorAll(".plan")) label.hidden = free && label.querySelector("input").value !== "ultimate";
+    form.elements.renews.required = !free;
+    $("consent").hidden = free || !CHECKOUT_ENDPOINT;
+    if (free) {
+      days = "For life";
+      now = "$0.00 today.";
+      then = "Free for life. Nothing renews at a cost.";
+    } else if (saleYearly) { // the sale price wins over a code's or link's trial (decision 12)
       days = "50% off your first year";
       now = `${price} today for your first year.`;
       then = `Then ${row.querySelector(".y").dataset.regular} a year plus any tax from ${dateIn(365)}, renewing until you cancel.`;
     } else if (noTrial) {
-      document.querySelector("h1").textContent = document.title = "Subscribe to TakesAI";
       days = "Already used";
       now = `${price} today.`;
       then = `Renews at ${price} ${per} plus any tax until you cancel.`;
@@ -68,10 +79,13 @@ function checkoutPage() {
       days = `${n} days`;
       then = `Then ${price} ${per} plus any tax from ${dateIn(n)}, renewing until you cancel. Cancel before then and you pay nothing.`;
     }
-    $("trial-label").textContent = saleYearly ? "Black Friday" : applied && applied.days ? `Free trial · ${applied.code.toUpperCase()}` : "Free trial";
-    if (sale) document.querySelector("h1").textContent = document.title = saleYearly || noTrial ? "Subscribe to TakesAI" : "Start your free trial";
+    $("trial-label").textContent = free ? `Ultimate · ${applied.code.toUpperCase()}` : saleYearly ? "Black Friday" : applied && applied.days ? `Free trial · ${applied.code.toUpperCase()}` : "Free trial";
+    const heading = free ? "Get Ultimate free" : saleYearly || noTrial ? "Subscribe to TakesAI" : null;
+    h1.textContent = heading || h1Text;
+    document.title = heading || title;
     $("trial-days").textContent = days;
     document.body.classList.toggle("sale-y", saleYearly);
+    document.body.classList.toggle("free-y", free);
     $("due-now").textContent = now;
     $("due-then").textContent = then;
     if (!busy) start.textContent = cta();
@@ -91,6 +105,7 @@ function checkoutPage() {
 
   // The button says what starts: "Start 30-day free trial", or Subscribe when there's no trial.
   function cta() {
+    if (applied && applied.free) return "Get Ultimate free";
     if (noTrial || (sale && pick("period") === "yearly")) return "Subscribe";
     const n = applied ? applied.days : referral() ? 7 : 3;
     return n ? `Start ${n}-day free trial` : "Start free trial";
@@ -113,13 +128,21 @@ function checkoutPage() {
       const r = await fetch(`${CHECK_ENDPOINT}?code=${encodeURIComponent(typed)}`);
       if (r.status === 404 || r.status >= 500) throw new Error("unavailable");
       const d = await r.json().catch(() => ({}));
-      if (r.ok && d.ok && d.trial_days > 0) {
+      if (r.ok && d.ok && d.free) {
+        applied = { code: typed, free: true };
+        form.elements.plan.value = "ultimate";
+        note(`${typed.toUpperCase()} applied: Ultimate, free for life.`, "ok");
+        ok = true;
+      } else if (r.ok && d.ok && d.trial_days > 0) {
         applied = { code: typed, days: d.trial_days, edits: d.trial_edits };
         note(`${typed.toUpperCase()} applied: ${d.trial_days} days free` + (d.trial_edits ? `, up to ${d.trial_edits} edits during the trial.` : "."), "ok");
         ok = true;
       } else if (r.status === 429) {
         applied = null;
         note("Too many tries in a row. Wait a minute, then apply it again.", "bad");
+      } else if (d.error === "code_used_up") {
+        applied = null;
+        note(`${typed.toUpperCase()} has been fully claimed. Ask whoever gave you the code.`, "bad");
       } else {
         applied = null;
         note(`We don't recognize ${typed.toUpperCase()}. Check the code, or leave it empty.`, "bad");
@@ -178,9 +201,10 @@ function checkoutPage() {
     };
     const typed = code.value.trim(), ref = referral(); // no email: Stripe Checkout collects it
     if (typed && !applied) { // typed but never applied: apply it and show what it gives; the next tap goes on
-      if (await applyCode()) note(codeMsg.textContent + " Check your trial, then tap the button again.", "ok");
+      if (await applyCode()) note(codeMsg.textContent + (applied && applied.free ? " Tap the button again." : " Check your trial, then tap the button again."), "ok");
       return;
     }
+    if (applied && applied.free) { body.plan = "ultimate"; body.period = "yearly"; } // the server decides anyway (v6)
     if (applied) body.code = applied.code;
     if (ref) body.referral = ref;
     if (noTrial) body.trial = false; // after 409 trial_used: the plan without a trial (the App shell must accept this field)
@@ -200,7 +224,15 @@ function checkoutPage() {
 
     setBusy(false);
     const error = res.status >= 500 ? "unavailable" : res.status === 429 ? "rate_limited" : data.error;
-    if (error === "bad_code") {
+    if (error === "code_used_up") {
+      say(`${typed.toUpperCase()} has been fully claimed. Ask whoever gave you the code, or choose a plan without it.`, "Continue without a code", () => {
+        code.value = "";
+        applied = null;
+        note("");
+        edited();
+        start.focus();
+      });
+    } else if (error === "bad_code") {
       say(`We don't recognize the code ${typed.toUpperCase()}. Check it, or continue without a code.`, "Continue without a code", () => {
         code.value = "";
         applied = null;
@@ -273,6 +305,24 @@ function newId() {
   return window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
+// A second use of a free code by the same email or account (M-89): the webhook cancelled it; nothing was charged.
+function alreadyFree() {
+  document.title = "You already have free Ultimate · TakesAI";
+  $("done-h").textContent = "You already have free Ultimate";
+  $("done-lede").textContent = "This email already has it, so we didn't start a second one. Sign in to TakesAI with it.";
+  $("redeem").hidden = true;
+  $("receipt-sec").hidden = true;
+}
+
+// A free code's success (M-89): free for life, and a note for anyone already paying in a store.
+function freeDone() {
+  document.title = "Ultimate is yours · TakesAI";
+  $("done-h").textContent = "Ultimate is yours, free for life";
+  $("done-lede").textContent = "Get the app and sign in with the email you used. Ultimate is there.";
+  $("cancel-line").hidden = true;
+  $("store-note").hidden = false;
+}
+
 // Success page: poll checkout-status every 2 seconds for up to 30, then show the redeem link and code.
 function donePage() {
   const id = params.get("session_id");
@@ -285,6 +335,8 @@ function donePage() {
     try {
       const data = await (await fetch(url)).json();
       if (data && data.status === "trial_used") return trialUsed();
+      if (data && data.status === "already_free") return alreadyFree();
+      if (data && data.free) freeDone();
       const r = data && data.redeem;
       if (r && typeof r.url === "string" && r.url.startsWith("https://") && typeof r.code === "string") {
         $("open").href = r.url;
