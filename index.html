@@ -246,6 +246,17 @@
         <p class="fine">One free trial per person. <a href="terms/">Terms</a></p>
       </div>
     </form>
+    <script>
+      // QUIZ_ON turns true when the quiz at start/ is open to everyone (docs/STATUS.md, "Web onboarding (018)", going live, step 5;
+      // the founder's go). Then "Start your free trial" opens the quiz first, with the plan and period chosen, and the quiz hands
+      // both to the checkout. While it is false, or with JavaScript off, the form opens the checkout as before.
+      (function () {
+        var QUIZ_ON = false, form = document.getElementById('picker');
+        if (!QUIZ_ON) return;
+        form.action = 'start/';
+        form.insertAdjacentHTML('beforeend', '<input type="hidden" name="src" value="home">');
+      })();
+    </script>
   </div>
 </section>
 

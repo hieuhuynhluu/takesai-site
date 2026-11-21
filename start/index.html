@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<title>See what editing costs you: TakesAI</title>
+<meta name="description" content="Four quick questions about how you post, what editing costs you in hours and dollars, and a real take cut by TakesAI.">
+<link rel="canonical" href="https://takesai.app/start/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TakesAI">
+<meta property="og:title" content="See what editing costs you">
+<meta property="og:description" content="Four quick questions, your editing time in hours and dollars, and a real take cut by TakesAI.">
+<meta property="og:url" content="https://takesai.app/start/">
+<meta property="og:image" content="https://takesai.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TakesAI. Edit less. Post more.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F6F6F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="../assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="start.css">
+<script>
+  // First paint: question 1 and the bar are in the page before any script loads, so a phone on a slow connection sees
+  // the question, not an empty page. A reload on a later step shows nothing until flow.js puts that step up.
+  if (location.hash && location.hash !== '#who') document.documentElement.classList.add('s-wait');
+</script>
+<script src="../assets/site.js" defer></script>
+<script type="module" src="flow.js"></script>
+<!-- flow.js's imports, fetched together instead of one after another as each file names the next. -->
+<link rel="modulepreload" href="maths.js"><link rel="modulepreload" href="track.js"><link rel="modulepreload" href="config.js"><link rel="modulepreload" href="cut.js">
+<link rel="modulepreload" href="player.js"><link rel="modulepreload" href="media/extract.js"><link rel="modulepreload" href="media/mp4.js"><link rel="modulepreload" href="media/probe.js">
+</head>
+<body class="start">
+
+<!-- The flow is a way to pay outside the app, so pages the app opens never show it (spec 018 FR-008; site.js marks them from-app). -->
+<header class="s-bar not-app" id="bar">
+  <button class="s-back" id="back" type="button" aria-label="Back" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5"/></svg></button>
+  <a class="brand" id="brand" href="../" aria-label="TakesAI home"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="85" height="18"></picture></a>
+  <span class="s-count" id="count" aria-hidden="true">1/9</span>
+  <a class="s-skip not-app" id="skip" data-checkout="skip" href="../checkout/" hidden>Skip</a>
+  <div class="s-rail" id="rail" role="progressbar" aria-label="Progress" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1" aria-valuetext="Step 1 of 9"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<main class="s-main not-app" id="flow">
+
+<section class="s-step" data-step="who" aria-labelledby="who-h">
+  <div class="s-body">
+    <h1 id="who-h" tabindex="-1">Who’s filming?</h1>
+    <p class="s-lead" id="who-lead">Four quick questions. Then watch TakesAI cut a real take.</p>
+    <div class="s-opts" role="group" aria-labelledby="who-h" data-question="persona">
+      <button type="button" class="s-opt" data-value="tiktok_shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><span>TikTok Shop creator</span></button>
+      <button type="button" class="s-opt" data-value="ugc"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="12" height="10" rx="2.5"/><path d="m15 11 6-3v8l-6-3"/></svg><span>UGC creator</span></button>
+      <button type="button" class="s-opt" data-value="influencer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/></svg><span>Influencer</span></button>
+      <button type="button" class="s-opt" data-value="just_me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg><span>Just me</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="s-step" data-step="goal" aria-labelledby="goal-h" hidden>
+  <div class="s-body">
+    <h1 id="goal-h" tabindex="-1">What are you after?</h1>
+    <div class="s-opts" role="group" aria-labelledby="goal-h" data-question="goal">
+      <button type="button" class="s-opt" data-value="post_more"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Post more videos</span></button>
+      <button type="button" class="s-opt" data-value="save_time"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Get my time back</span></button>
+      <button type="button" class="s-opt" data-value="freedom"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.500M5.3 5.3 7 7M17 17l1.7 1.700M5.3 18.7 7 17M17 7l1.7-1.7"/></svg><span>More freedom</span></button>
+      <button type="button" class="s-opt" data-value="fire_editor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5"/><path d="M3 20a7 7 0 0 1 12.5-4.300M16 18.500h6"/></svg><span>Stop paying an editor</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="s-step" data-step="videos" aria-labelledby="videos-h" hidden>
+  <div class="s-body">
+    <h1 id="videos-h" tabindex="-1">How many videos do you post now?</h1>
+    <div class="s-slide">
+      <p class="s-fig" aria-hidden="true"><b id="videos-n">1</b> <span id="videos-u">a day</span></p>
+      <input class="s-range" id="videos-r" type="range" min="0" max="14" step="1" aria-label="Videos you post">
+      <p class="s-ends" aria-hidden="true"><span>1 a week</span><span>10+ a day</span></p>
+    </div>
+  </div>
+  <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Next</button></div>
+</section>
+
+<section class="s-step" data-step="edit-time" aria-labelledby="edit-h" hidden>
+  <div class="s-body">
+    <h1 id="edit-h" tabindex="-1">How long does editing one take you?</h1>
+    <div class="s-slide">
+      <p class="s-fig" aria-hidden="true"><b id="edit-n">1</b> <span id="edit-u">hour a video</span></p>
+      <input class="s-range" id="edit-r" type="range" min="0" max="10" step="1" aria-label="Editing time a video">
+      <p class="s-ends" aria-hidden="true"><span>5 minutes</span><span>4+ hours</span></p>
+    </div>
+  </div>
+  <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Next</button></div>
+</section>
+
+<section class="s-step" data-step="savings" aria-labelledby="savings-h" hidden>
+  <div class="s-body">
+    <h1 id="savings-h" tabindex="-1">Editing costs you <span id="savings-day" class="nw">1 h</span> every day.</h1>
+    <div class="r-wrap"><ul class="receipt s-receipt" id="savings-time" aria-label="Editing time a month"></ul></div>
+    <div class="r-wrap"><ul class="receipt s-receipt" id="savings-money" aria-label="Editing cost a month"></ul></div>
+    <details class="s-why" id="savings-why">
+      <summary>Where these numbers come from</summary>
+      <ul id="savings-notes"></ul>
+    </details>
+  </div>
+  <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Show my year</button></div>
+</section>
+
+<section class="s-step s-centre" data-step="clock" aria-labelledby="clock-h" hidden>
+  <div class="s-body">
+    <h1 id="clock-h" tabindex="-1"></h1>
+    <div class="s-dial" role="img" id="clock-dial">
+      <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="t" cx="120" cy="120" r="104"/><circle class="k" cx="120" cy="120" r="116.5" pathLength="240"/><circle class="a" id="clock-arc" cx="120" cy="120" r="104" pathLength="100"/></svg>
+      <p><b id="clock-back"></b><span>yours again, daily</span></p>
+    </div>
+    <p class="s-keep">With TakesAI you keep <strong id="clock-keep"></strong>.</p>
+    <p class="s-note">Plans start at $<span id="clock-price">19.99</span> a month.</p>
+  </div>
+  <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Set my target</button></div>
+</section>
+
+<section class="s-step" data-step="target" aria-labelledby="target-h" hidden>
+  <div class="s-body">
+    <h1 id="target-h" tabindex="-1"></h1>
+    <p class="s-lead" id="target-lead"></p>
+    <div class="s-slide s-compact" id="target-slide">
+      <p class="s-fig" aria-hidden="true"><b id="target-n"></b> <span>a week</span> <small id="target-c"></small></p>
+      <input class="s-range" id="target-r" type="range" min="0" max="1" step="1" aria-label="Videos you’ll post">
+      <p class="s-ends" aria-hidden="true"><span id="target-min"></span><span>70+ a week</span></p>
+    </div>
+    <div class="r-wrap s-tear" id="target-tear"><ul class="receipt s-receipt" id="target-receipt" aria-label="Editing, by hand and in TakesAI"></ul></div>
+  </div>
+  <div class="s-foot"><button type="button" class="btn btn-red btn-lg" id="target-go"></button></div>
+</section>
+
+<section class="s-step" data-step="cut" aria-labelledby="cut-h" hidden>
+  <!-- cut.js shows one view at a time. Words for failures come from its own table, in the site's voice. -->
+  <div class="s-view" data-view="start" hidden>
+    <div class="s-body">
+      <h1 id="cut-h" tabindex="-1">Your first cut is free.</h1>
+      <p class="s-lead" id="cut-lead"></p>
+      <ol class="s-how">
+        <li><b>A raw take, up to 1 minute</b><span>Pauses, retakes and all.</span></li>
+        <li><b>We cut it</b><span>It takes about a minute.</span></li>
+        <li><b>Watch it here</b><span>Before and after, with everything we removed listed.</span></li>
+      </ol>
+    </div>
+    <div class="s-foot">
+      <input class="sr" id="cut-file" type="file" accept="video/*,.mp4,.mov,.m4v" tabindex="-1" aria-hidden="true">
+      <!-- On a computer the button sits in a drop area, and a video can be dropped anywhere on this step (cut.js).
+           A phone has no dragging, so there the hint is hidden and only the button shows (start.css). -->
+      <div class="s-drop">
+        <p class="s-drop-t" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 3v9.5M6 9l4 4 4-4M3.5 15.5h13"/></svg>Drop a video here, or</p>
+        <button type="button" class="btn btn-red btn-lg" data-act="choose">Choose a video</button>
+      </div>
+      <button type="button" class="btn btn-quiet btn-lg" data-act="example">Watch the example</button>
+      <!-- Pinned with the buttons, so it is read before a file is chosen on any phone (FR-021). -->
+      <p class="s-fine"><span id="cut-terms">No account, no card.</span> Your video stays on this device. Only its sound is sent to make the cut. <a href="../privacy/">Privacy</a></p>
+    </div>
+  </div>
+
+  <!-- Shown while a file is dragged over the page and this step can take a video. -->
+  <div class="s-veil" id="cut-veil" aria-hidden="true" hidden><p>Drop your video</p></div>
+
+  <div class="s-view" data-view="busy" hidden>
+    <div class="s-body">
+      <h1 id="busy-h" tabindex="-1"></h1>
+      <p class="s-lead" id="busy-lead"></p>
+      <div class="s-prog" id="busy-prog" role="progressbar" aria-labelledby="busy-step" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+      <p class="sr" id="busy-step" role="status" aria-live="polite"></p>
+      <ol class="s-stages" id="busy-stages" aria-hidden="true">
+        <li>Uploading your take</li><li>Writing out every word</li><li>Picking your best takes</li><li>Making the cuts</li><li>Checking every cut</li>
+      </ol>
+    </div>
+    <div class="s-foot"><button type="button" class="btn btn-quiet btn-lg" data-act="stop">Stop</button></div>
+  </div>
+
+  <div class="s-view" data-view="problem" hidden>
+    <div class="s-body">
+      <h1 id="problem-h" tabindex="-1"></h1>
+      <p class="s-lead" id="problem-body" role="status"></p>
+    </div>
+    <div class="s-foot" id="problem-acts"></div>
+  </div>
+
+  <div class="s-view" data-view="player" hidden>
+    <div class="s-body">
+      <h1 id="player-h" tabindex="-1"></h1>
+      <div id="player"></div>
+      <p class="s-note" id="player-note"></p>
+      <button type="button" class="btn btn-quiet s-own" data-act="choose" id="player-own" hidden>Choose a video of mine</button>
+    </div>
+    <div class="s-foot">
+      <p class="s-plan" id="player-plan"></p>
+      <a class="btn btn-red btn-lg not-app" data-checkout="ready" href="../checkout/"><span class="if-trial">Start my free trial</span><span class="if-no-trial">See the plans</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<main class="page only-app">
+  <h1>Plans are managed in the app</h1>
+  <p class="lede">This page isn’t available from inside TakesAI. For help with your plan or your cuts, open Support.</p>
+  <p><a class="btn" href="../support/">Open Support</a></p>
+</main>
+
+<noscript>
+  <style>.s-main, .s-bar { display: none; }</style>
+  <main class="page not-app">
+    <h1>See what editing costs you</h1>
+    <p class="lede">This page asks four questions and cuts one of your videos in your browser, so it needs JavaScript. Turn it on and reload, or go straight to the plans.</p>
+    <p class="actions"><a class="btn btn-red not-app" href="../checkout/">See the plans</a> <a class="btn btn-quiet" href="../beta/">Get the app</a></p>
+  </main>
+</noscript>
+
+<footer class="site-footer">
+  <div class="foot">
+    <div><a class="brand" href="../"><picture><source srcset="../assets/logo-dark.svg" media="(prefers-color-scheme: dark)"><img src="../assets/logo.svg" alt="TakesAI" width="94" height="20"></picture></a><p>The AI that edits your talking videos for you.</p></div>
+    <div><h4>Product</h4><ul><li><a href="../#how">How it works</a></li><li><a href="../#pricing">Pricing</a></li><li><a href="../beta/">Get the beta</a></li></ul></div>
+    <div class="if-trial not-app"><h4>Earn</h4><ul><li><a href="../earn/">Affiliates</a></li><li><a href="../earn/terms/">Affiliate terms</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="../support/">Support</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../terms/">Terms</a></li><li><a href="../privacy-choices/">Your privacy choices</a></li></ul></div>
+  </div>
+  <div class="foot-b"><span>TakesAI by Hieu Luu</span><span>Made for people who post every day.</span></div>
+</footer>
+</body>
+</html>

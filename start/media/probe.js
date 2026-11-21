@@ -1,0 +1,3 @@
+// Made by make_fixtures.py --selfcheck. 48 kHz mono AAC-LC as ADTS; PEAK is the index of the largest sample
+// in the decoder's full output (FRAMES x 1024 samples, priming included), measured with ffmpeg.
+export const PROBE = { frames: 10, peak: 5024, adts: '//FMQANf/NwATGF2YzYzLjEuMTAxAAIwQA7/8UxAAX/8ARggB//xTEABf/wBGCAH//FMQAF//AEYQAf/8UxAHb/8AOybND6+4Qm+nRoPn/Y+/8/dHOd5/2Pv+/4TeV4HLuQpe5ScGlL04hdy5DIUv1tTxnbnY90i8m59yFFul9bLqE8/Fn0UnA9V8+496G3LrLWOWsy3FcMjRzvWNJGUjBDBDBCIMmtOCQY/W1YmAJRKRnzjzCAEsDyUlyyy3mMAI6PTWrQVFYAJRxTXLsZAC4ADJpLSB2jq4AAAHMDIMS3n1quojgAAKCicn0k/Ck0HUwAAMxwA6J57yNx7ubcuugAAANXDFm+b87ufTdz2QGFXmz4vG38bi7gKw6R0f/4v/i/9W+AKqg7/8UxAAX/8ARjgB//xTEABf/wBGCAH//FMQAF//AEYIAf/8UxAAX/8ARggB//xTEABf/wBGCAH' };
