@@ -150,10 +150,12 @@ function playable(url) {
     v.src = url;
   });
 }
-/** Loudness for the timeline: the peak of each tenth of a second of the 16 kHz sound, scaled to the take's loudest. */
+/** Loudness for the timeline: the peak of each 25 ms of the 16 kHz sound, scaled to the take's loudest. Fine enough
+ *  that a cut of a few seconds, drawn across the whole timeline, still shows its own syllables. */
+const WAVE_STEP = 0.025;
 function waveOf(wav) {
-  const v = new DataView(wav.buffer, wav.byteOffset + 44, wav.byteLength - 44), n = v.byteLength >> 1, out = [];
-  for (let i = 0; i < n; i += 1600) { let peak = 0; for (let k = i; k < Math.min(n, i + 1600); k += 8) peak = Math.max(peak, Math.abs(v.getInt16(2 * k, true))); out.push(peak); }
+  const v = new DataView(wav.buffer, wav.byteOffset + 44, wav.byteLength - 44), n = v.byteLength >> 1, out = [], step = 16000 * WAVE_STEP;
+  for (let i = 0; i < n; i += step) { let peak = 0; for (let k = i; k < Math.min(n, i + step); k += 8) peak = Math.max(peak, Math.abs(v.getInt16(2 * k, true))); out.push(peak); }
   const top = Math.max(1, ...out);
   return out.map((p) => Math.round((p / top) * 1000) / 1000);
 }
@@ -372,7 +374,7 @@ async function ready(mine, id) {
   const words = (transcript.tokens ?? []).filter((t) => t.type === 'word').map((t) => [t.start_ms / 1000, t.end_ms / 1000, t.text]);
   const basic = cutlist.flags?.fallback_used === 'baseline', none = !segments.some((sg) => sg.reason);
   phase = 'ready';
-  const show = { src: take.url, data: { duration: D, segments, wave: take.wave, waveStep: 0.1, words }, title: finishedTitle(ctx.goalWeek), from: 'ready', own: false,
+  const show = { src: take.url, data: { duration: D, segments, wave: take.wave, waveStep: WAVE_STEP, words }, title: finishedTitle(ctx.goalWeek), from: 'ready', own: false,
     note: (none ? 'We found nothing to cut in this one. ' : basic ? 'A basic cut: pauses only. A full cut also removes retakes and filler words, and adds captions. ' : '')
       + 'You can watch it here. Saving and exporting happen in the app.' };
   ctx.track('start_cut_ready', { raw_s: Math.round(D), cut_s: Math.round(segments.reduce((sec, sg) => sec + (sg.reason ? 0 : sg.e - sg.s), 0)), removals: segments.filter((sg) => sg.reason).length,

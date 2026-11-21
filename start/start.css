@@ -248,8 +248,12 @@
 .p-frame { position: relative; --ar: 0.5625; width: min(100%, calc(clamp(200px, 100dvh - 440px, 460px) * var(--ar))); aspect-ratio: var(--ar); margin: 0 auto; border-radius: 20px; overflow: hidden; background: #000;
   box-shadow: 0 0 0 1px var(--line-2), var(--shadow-lg); cursor: pointer; }
 .p-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.p-cap { position: absolute; left: 10px; right: 10px; bottom: 19%; margin: 0; min-height: 1.25em; text-align: center; pointer-events: none;
-  font: 900 19px/1.25 var(--sans); letter-spacing: -0.01em; color: #fff; -webkit-text-stroke: 5px #151515; paint-order: stroke fill; }
+/* Captions in the app's default look, to the frame's scale (app/src/features/editor/captions/presets.ts): 3.4% of the
+   frame's height, the heaviest weight, an outline 0.16 of the size with half of it under the letters, centred 78% of the
+   way down, at most 84% of the width. Never under 10px, so a small frame on a phone can still be read. */
+.p-frame { container-type: inline-size; }
+.p-cap { position: absolute; left: 8%; right: 8%; top: 78%; translate: 0 -50%; margin: 0; text-align: center; pointer-events: none;
+  font: 900 max(10px, calc(3.4cqw / var(--ar))) / 1.2 var(--sans); letter-spacing: -0.01em; color: #fff; -webkit-text-stroke: 0.16em #151515; paint-order: stroke fill; }
 .p-cap .on { color: #FF5A6A; }
 .p-tc { position: absolute; left: 10px; bottom: 10px; padding: 5px 8px; border-radius: 8px; background: rgb(10 10 11 / 0.6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   font: 500 12px/1 var(--mono); color: #F4F4F0; font-variant-numeric: tabular-nums; pointer-events: none; }
@@ -268,11 +272,11 @@
 .p-mode b { font: 500 13px/1 var(--mono); color: var(--text-3); font-variant-numeric: tabular-nums; }
 .p-mode label:has(:checked) b { color: var(--text-2); }
 /* The timeline: the take's loudness, kept parts in ink and cut parts in red. A cut part closes up in After. */
-.p-track { position: relative; display: flex; height: 52px; margin: 14px 0 0; }
-.p-part { flex: var(--g) 1 0px; min-width: 0; display: flex; align-items: center; gap: 2px; margin-right: 2px; padding: 0 2px; border: 0; border-radius: 6px; background: var(--fill); overflow: hidden; cursor: pointer;
+.p-track { position: relative; display: flex; height: 36px; margin: 14px 0 0; }
+.p-part { flex: var(--g) 1 0px; min-width: 0; display: flex; align-items: center; gap: 1px; margin-right: 2px; padding: 0 2px; border: 0; border-radius: 6px; background: var(--fill); overflow: hidden; cursor: pointer;
   transition: flex-grow 0.9s var(--ease), margin 0.9s var(--ease), opacity 0.6s var(--ease), background-color 0.4s; }
 .p-part:last-of-type { margin-right: 0; }
-.p-part i { flex: 1; min-width: 1px; height: var(--a); border-radius: 2px; background: var(--bar); transition: background-color 0.4s; }
+.p-part i { flex: 1; min-width: 1px; height: var(--a); border-radius: 1px; background: var(--bar); transition: background-color 0.4s; }
 .p-part.x { background: color-mix(in srgb, var(--red) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--red) 45%, transparent); }
 .p-part.x i { background: var(--red); }
 .p-part.x.back { background: var(--fill-2); box-shadow: inset 0 0 0 1px var(--line-3); }
@@ -306,5 +310,4 @@
   .c-stage { margin: 0 -16px; }
   .s-bar { padding-left: 16px; padding-right: 16px; }
   .s-opt { min-height: 60px; padding: 0 14px; gap: 12px; font-size: 16px; }
-  .p-cap { font-size: 16px; -webkit-text-stroke-width: 4px; }
 }

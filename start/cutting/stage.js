@@ -178,6 +178,9 @@ function advance() {
   // Forward progress eases out; only a new cut draws it lower, at once.
   const shown = barAt(now);
   if (progress.fraction !== bar.to) bar = progress.fraction >= shown && !still.matches ? { from: shown, to: progress.fraction, at: now } : { from: progress.fraction, to: progress.fraction, at: 0 };
+  // The number changes with the words, in the same moment: never "Your cut is ready" at 96%.
+  const percent = percentOf(progress.fraction), pct = $('c-pct');
+  if (pct.textContent !== `${percent}%`) { pct.textContent = `${percent}%`; stage.setAttribute('aria-valuenow', percent); }
   if (step !== was) say();
   // A step the poll skipped is still shown; the next one comes when its time is up, poll or not.
   if (progress.behind) late = setTimeout(advance, Math.max(0, (progress.until ?? 0) - clock.now()) + 5);
@@ -267,12 +270,11 @@ function draw(now) {
   g2d.clearRect(0, 0, size.w, size.h);
   drawCut(pen, scene);
   // The words sit under the rollout, and the receipt under them; both follow the picture when it makes room.
-  const g = geometry(scene), percent = percentOf(progress?.fraction ?? 0);
+  const g = geometry(scene);
   foot.style.transform = `translateY(${g.footY}px)`;
   detail.style.opacity = 1 - g.settle;
   // The bar's number bows out as the total comes in: the cut's length is the one figure at the end.
   const pct = $('c-pct');
-  if (pct.textContent !== `${percent}%`) { pct.textContent = `${percent}%`; stage.setAttribute('aria-valuenow', percent); }
   pct.style.opacity = g.R < 0 ? 1 : 1 - seg(g.R, g.at.total - 0.25, g.at.total);
   slip.style.transform = `translateY(${g.footY + g.foot + 4}px)`;
   // The receipt never reaches the button under the screen: it may grow to the foot of the tip card's slot.

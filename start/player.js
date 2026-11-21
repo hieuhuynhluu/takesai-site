@@ -63,7 +63,9 @@ export function mount(root, { src, poster, data, onRestore = () => {} }) {
   const firstPlaying = (from) => parts.find((p) => plays(p) && p.e > from + 0.02);
   const elapsed = (t) => { let acc = 0; for (const p of parts) { if (!plays(p)) continue; if (t < p.e) return acc + Math.max(0, t - p.s); acc += p.e - p.s; } return acc; };
 
-  // ---- the timeline: one block a part, bars for the loudest tenth of a second each covers ----
+  // ---- the timeline: one block a part, and in it the take's loudness as thin bars, one every 3 points as on the app's
+  // timeline (app/src/features/editor/timeline/geometry.ts). A part's bars are counted for the width it has in the
+  // mode on screen, so a short cut that fills the track in After is drawn as finely as the whole take in Before. ----
   for (const p of parts) {
     p.el = document.createElement('div');
     p.el.className = 'p-part' + (p.family ? ' x' : '');
@@ -71,20 +73,32 @@ export function mount(root, { src, poster, data, onRestore = () => {} }) {
     p.el.addEventListener('click', () => { if (plays(p)) go(p.s); });
     track.insertBefore(p.el, head);
   }
-  let drawnW = 0;
+  const PITCH = 3; // a 2-point bar and a 1-point gap
+  /** How loud the take is from a to z seconds: the loudest sample they cover, or, for a bar narrower than a sample, the
+   *  sound at its middle, between the two nearest samples (so neighbouring bars are not all one height). */
+  const level = (a, z) => {
+    const step = data.waveStep;
+    if (z - a < step) {
+      const x = Math.max(0, (a + z) / 2 / step - 0.5), k = Math.floor(x), f = x - k;
+      return (data.wave[k] || 0) * (1 - f) + (data.wave[k + 1] ?? data.wave[k] ?? 0) * f;
+    }
+    let peak = 0;
+    for (let k = Math.floor(a / step); k <= Math.min(data.wave.length - 1, Math.floor(z / step)); k++) peak = Math.max(peak, data.wave[k] || 0);
+    return peak;
+  };
   function waves() {
     const w = track.clientWidth;
-    if (!w || Math.abs(w - drawnW) < 24) return;
-    drawnW = w;
-    const perSec = Math.max(1.5, Math.min(7, w / D / 4));
-    for (const p of parts) {
-      const len = p.e - p.s, bars = Math.max(1, Math.round(len * perSec));
+    if (!w) return;
+    // The parts on show share what the track has left after a 2-point gap after each but the last and 2 points inside
+    // each end (flex shares out the room after padding): a part's bars fill its share, one every PITCH points.
+    const shown = parts.filter(plays), total = shown.reduce((n, p) => n + p.e - p.s, 0), room = w - 2 * (shown.length - 1) - 4 * shown.length;
+    for (const p of shown) {
+      const len = p.e - p.s, bars = Math.max(1, Math.floor(((len / total) * room + 1) / PITCH));
+      if (p.bars === bars) continue;
+      p.bars = bars;
       p.el.replaceChildren(...Array.from({ length: bars }, (_, b) => {
-        const k0 = Math.floor((p.s + (len * b) / bars) / data.waveStep), k1 = Math.min(data.wave.length - 1, Math.floor((p.s + (len * (b + 1)) / bars) / data.waveStep));
-        let peak = 0;
-        for (let k = k0; k <= k1; k++) peak = Math.max(peak, data.wave[k] || 0);
         const bar = document.createElement('i');
-        bar.style.setProperty('--a', `${Math.max(6, Math.round(peak * 100))}%`);
+        bar.style.setProperty('--a', `${Math.max(6, Math.round(level(p.s + (len * b) / bars, p.s + (len * (b + 1)) / bars) * 100))}%`);
         return bar;
       }));
     }
@@ -115,11 +129,12 @@ export function mount(root, { src, poster, data, onRestore = () => {} }) {
   receipt.append(total);
   q('.p-hint').hidden = !lines.length;
 
-  // ---- captions: up to four words a line, broken at pauses, punctuation and the edges of cut parts ----
+  // ---- captions: up to three words a line (the app's words_per_chunk), broken at pauses, punctuation and the edges of
+  // cut parts ----
   const caps = [];
   for (const w of data.words ?? []) {
     const p = partAt(w[0] + 0.01), cur = caps[caps.length - 1];
-    if (!cur || cur.p !== p || w[0] - cur.e > 0.45 || cur.w.length >= 4 || /[.?!,]$/.test(cur.w[cur.w.length - 1][2])) caps.push({ s: w[0], e: w[1], p, w: [w] });
+    if (!cur || cur.p !== p || w[0] - cur.e > 0.45 || cur.w.length >= 3 || /[.?!,]$/.test(cur.w[cur.w.length - 1][2])) caps.push({ s: w[0], e: w[1], p, w: [w] });
     else { cur.w.push(w); cur.e = w[1]; }
   }
   function caption(t) {
@@ -189,6 +204,7 @@ export function mount(root, { src, poster, data, onRestore = () => {} }) {
       for (const p of l.parts) { p.el.classList.toggle('gone', mode === 'after' && !isBack); p.el.classList.toggle('back', isBack); p.el.classList.remove('hot'); }
       if (mode === 'after') l.li.classList.remove('hot');
     }
+    waves(); // the parts on show have changed: their bars are counted again for the width each will have
   }
   function lineTap(l) {
     if (mode === 'before') return go(l.parts[0].s); // Before: hear the part that was cut
