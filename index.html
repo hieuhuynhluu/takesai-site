@@ -251,7 +251,7 @@
       // the founder's go). Then "Start your free trial" opens the quiz first, with the plan and period chosen, and the quiz hands
       // both to the checkout. While it is false, or with JavaScript off, the form opens the checkout as before.
       (function () {
-        var QUIZ_ON = false, form = document.getElementById('picker');
+        var QUIZ_ON = true, form = document.getElementById('picker');
         if (!QUIZ_ON) return;
         form.action = 'start/';
         form.insertAdjacentHTML('beforeend', '<input type="hidden" name="src" value="home">');
