@@ -5,6 +5,7 @@ import config from './config.js';
 import { rewardLead, rewardTerms, finishedTitle } from './maths.js';
 import { mount } from './player.js';
 import { extract } from './media/extract.js';
+import * as stage from './cutting/stage.js';
 
 const $ = (id) => document.getElementById(id);
 const section = document.querySelector('.s-step[data-step="cut"]'), input = $('cut-file');
@@ -41,12 +42,9 @@ const COPY = {
 };
 /** Failures the same video can be sent again after; the others need another video. */
 const RETRY = new Set(['offline', 'upload_failed', 'stt_unavailable', 'timeout', 'intake_paused', 'cancelled', 'internal']);
-const STAGES = ['Uploading your take', 'Writing out every word', 'Picking your best takes', 'Making the cuts', 'Checking every cut']; // the app's (stage-label.ts)
-const STAGE_END = [0.25, 0.6, 0.8, 0.9, 0.99];
-const RUNNING = { checking_audio: 2, transcribing: 2, choosing_takes: 3, placing_cuts: 4, checking_cuts: 5 };
 
 class Stop extends Error { constructor(code, status) { super(code); this.code = code; this.status = status; } }
-let ctx = null, run = 0, phase = 'idle', player = null, take = null, job = null, pending = null, access = null, startedAt = 0, step = 0;
+let ctx = null, run = 0, phase = 'idle', player = null, take = null, job = null, pending = null, access = null, startedAt = 0, finished = null;
 let choosable = false; // the view on screen offers a way to choose a video, so a dropped one is taken too
 
 // ---- views ----
@@ -59,31 +57,42 @@ function view(name) {
   section.querySelector(`[data-view="${name}"] h1`).focus({ preventScroll: true });
 }
 function closePlayer() { player?.destroy(); player = null; }
-function busy(title, lead, stop, stages) {
-  phase = stages ? 'cutting' : 'reading';
+/** The cutting screen (cutting/stage.js, the app's own animation on this video). It opens when a video is chosen and
+ *  stays through the read, the send and the cut, as the app's does from Send; `url` is null after a reload, when the
+ *  page has no video to draw from. `reading`: nothing has been sent yet, so Stop only drops the read. */
+function cutting(reading, url = take?.url ?? null) {
+  phase = reading ? 'reading' : 'cutting';
   closePlayer();
-  $('busy-h').textContent = title;
-  $('busy-lead').textContent = lead;
-  $('busy-stages').hidden = !stages;
-  section.querySelector('[data-act="stop"]').textContent = stop;
-  step = 0;
-  progress(stages ? 1 : 0);
-  view('busy');
+  finished = null;
+  $('busy-h').textContent = 'Cutting your video';
+  $('busy-lead').textContent = 'Keep this page open. Your video stays on this device; only its sound is sent.';
+  const [stop, watch] = [section.querySelector('[data-act="stop"]'), section.querySelector('[data-act="watch"]')];
+  stop.hidden = false; stop.style.visibility = ''; watch.hidden = true;
+  if (!stage.isOpen()) {
+    stage.open({ url, ready: atReady });
+    if (take && url === take.url) stage.setSound(take.made.wav, take.made.manifest.duration_ms);
+  }
+  if (section.querySelector('[data-view="busy"]').hidden) view('busy');
 }
-/** The bar creeps toward each step's end and reaches it only with the next real stage; it never goes back. */
-function progress(to) {
-  if (to < step) return;
-  step = to;
-  const from = to > 1 ? STAGE_END[to - 2] : 0, end = to ? STAGE_END[to - 1] : 0.5, p = Math.round((from + (end - from) * 0.9) * 100);
-  $('busy-prog').style.setProperty('--p', `${p}%`);
-  $('busy-prog').setAttribute('aria-valuenow', p);
-  $('busy-step').textContent = to ? STAGES[to - 1] : '';
-  [...$('busy-stages').children].forEach((li, i) => { li.className = i + 1 < to ? 'done' : i + 1 === to ? 'now' : ''; });
+/** The ready moment begins: the line and the button change with the picture, and the cut opens only from the button
+ *  (as the app's editor does). */
+function atReady() {
+  $('busy-lead').textContent = 'Watch it when you’re ready.';
+  const [stop, watch] = [section.querySelector('[data-act="stop"]'), section.querySelector('[data-act="watch"]')];
+  stop.hidden = true; watch.hidden = false;
+}
+function watchCut() {
+  if (!finished) return;
+  const show = finished;
+  finished = null;
+  stage.close();
+  showPlayer(show);
 }
 /** A state that is not the happy path: its own words, and always at least one way on. */
 function problem(code, kind) {
   phase = 'problem';
   closePlayer();
+  stage.close();
   const [title, body] = COPY[code] ?? COPY.internal;
   $('problem-h').textContent = title;
   $('problem-body').textContent = body;
@@ -151,8 +160,9 @@ function waveOf(wav) {
 async function chosen(file, via = 'picker') {
   const mine = ++run, resume = pending;
   ctx.track('start_video_chosen', { size_mb: Math.round(file.size / 1e6), via });
-  busy('Reading your video', 'It stays on this device. Only its sound is sent.', 'Cancel', false);
   const url = URL.createObjectURL(file);
+  stage.close(); // another video: its own picture, from the start
+  cutting(true, url);
   try {
     const limit = new Promise((_, no) => setTimeout(() => no(new Stop('media_unreadable')), 60000));
     // Both run at once; the read's own reason wins (a file that is no video at all fails both).
@@ -164,6 +174,7 @@ async function chosen(file, via = 'picker') {
     if (resume && made.manifest.content_hash !== resume.content_hash) { URL.revokeObjectURL(url); return problem('other_video', 'return'); }
     if (take) URL.revokeObjectURL(take.url);
     take = { url, made, wave: waveOf(made.wav) };
+    stage.setSound(made.wav, made.manifest.duration_ms); // the bars rise, and the frames are dealt out
   } catch (e) {
     URL.revokeObjectURL(url);
     if (mine !== run) return;
@@ -175,6 +186,7 @@ async function chosen(file, via = 'picker') {
   // Back for a cut made earlier: the same video is here again, so fetch the cut and play it.
   pending = null;
   job = resume.job_id;
+  startedAt = 0; // not sent by this visit: no wait to report, and no steps to replay
   session().then(() => watch(mine, resume.job_id), (e) => { if (mine === run) failed(COPY[e.code] ? e.code : 'internal'); });
 }
 
@@ -258,7 +270,7 @@ async function settle(id) {
 }
 async function send() {
   const mine = ++run, { made } = take, hash = made.manifest.content_hash;
-  busy('Cutting your video', 'About a minute. Keep this page open.', 'Stop', true);
+  cutting(false);
   startedAt = performance.now();
   job = null;
   // The record is written before the request leaves, so a job whose answer is lost on the way back is still known.
@@ -291,8 +303,10 @@ async function send() {
     // Stopped while create-job was on its way: the job exists now, so it is stopped too.
     if (mine !== run) return void endJob(id);
     job = id;
+    stage.setJob(rowOf(created.job), 0);
     if (created.job?.state === 'awaiting_audio') {
       await Promise.all((created.upload_targets ?? []).map((t) => put(t, t.kind === 'audio' ? made.wav : made.frames, mine)));
+      stage.setJob(rowOf(created.job), 1); // both files are up
       await call('/functions/v1/confirm-upload', { job_id: id });
     }
     await watch(mine, id);
@@ -313,6 +327,8 @@ function failed(code, over = false) {
   ctx.track('start_cut_failed', { code });
   problem(code, 'failed');
 }
+/** The job as the cutting screen reads it (the app's StageInput.job). */
+const rowOf = (j) => (j ? { state: j.state, stage: j.stage ?? null, failure_code: j.failure_code ?? null } : null);
 /** Reads the job row until it ends. A dropped connection only waits; the cut is made on the server either way. */
 async function watch(mine, id) {
   const until = Date.now() + CUT_LIMIT_MS;
@@ -329,7 +345,7 @@ async function watch(mine, id) {
       // Back after a reload with the job still waiting for its audio: this page has no file to send. The start is the
       // way on; the record stays, so the same video sends this job again.
       if (row?.state === 'awaiting_audio' && !take) return start();
-      if (row) progress(row.state === 'running' ? RUNNING[row.stage ?? 'checking_audio'] ?? step : 1);
+      if (row) stage.setJob(rowOf(row), 1);
       if (Date.now() > until) return failed(rows ? 'timeout' : 'offline');
     }
   } catch (e) { if (mine === run) failed(COPY[e.code] ? e.code : 'internal'); }
@@ -356,10 +372,16 @@ async function ready(mine, id) {
   const words = (transcript.tokens ?? []).filter((t) => t.type === 'word').map((t) => [t.start_ms / 1000, t.end_ms / 1000, t.text]);
   const basic = cutlist.flags?.fallback_used === 'baseline', none = !segments.some((sg) => sg.reason);
   phase = 'ready';
-  showPlayer({ src: take.url, data: { duration: D, segments, wave: take.wave, waveStep: 0.1, words }, title: finishedTitle(ctx.goalWeek), from: 'ready', own: false,
+  const show = { src: take.url, data: { duration: D, segments, wave: take.wave, waveStep: 0.1, words }, title: finishedTitle(ctx.goalWeek), from: 'ready', own: false,
     note: (none ? 'We found nothing to cut in this one. ' : basic ? 'A basic cut: pauses only. A full cut also removes retakes and filler words, and adds captions. ' : '')
-      + 'You can watch it here. Saving and exporting happen in the app.' });
-  ctx.track('start_cut_ready', { raw_s: Math.round(D), cut_s: Math.round(player.cutSeconds()), removals: player.removals, wait_s: startedAt ? Math.round((performance.now() - startedAt) / 1000) : null });
+      + 'You can watch it here. Saving and exporting happen in the app.' };
+  ctx.track('start_cut_ready', { raw_s: Math.round(D), cut_s: Math.round(segments.reduce((sec, sg) => sec + (sg.reason ? 0 : sg.e - sg.s), 0)), removals: segments.filter((sg) => sg.reason).length,
+    wait_s: startedAt ? Math.round((performance.now() - startedAt) / 1000) : null });
+  // The cutting screen makes the real cut on the strip and prints its receipt (steps 4 and 5, then the ready moment);
+  // the cut opens from its button. Nothing is left to stop. A cut it can't draw opens at once.
+  section.querySelector('[data-act="stop"]').style.visibility = 'hidden';
+  finished = show;
+  if (!stage.isOpen() || !stage.setCut(cutlist, transcript, !startedAt)) watchCut();
 }
 function comeBack() {
   pending = store.get(CUT);
@@ -377,6 +399,7 @@ function start() {
   phase = 'idle';
   pending = null;
   closePlayer();
+  stage.close();
   view('start');
 }
 
@@ -394,7 +417,7 @@ export function open(c) {
   if (!kept?.job_id) return start();
   // A job from before a reload: see how it stands. The record stays whatever happens here.
   const mine = ++run;
-  busy('Cutting your video', 'About a minute. Keep this page open.', 'Stop', true);
+  cutting(false, null);
   job = kept.job_id;
   session().then(() => watch(mine, kept.job_id), () => { if (mine === run) start(); });
 }
@@ -405,6 +428,7 @@ section.addEventListener('click', (e) => {
   if (act === 'choose') input.click();
   if (act === 'example') showExample('start');
   if (act === 'stop') stop();
+  if (act === 'watch') watchCut();
 });
 input.addEventListener('change', () => { const file = input.files[0]; input.value = ''; if (file) chosen(file); });
 

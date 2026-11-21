@@ -33,6 +33,8 @@
 <!-- flow.js's imports, fetched together instead of one after another as each file names the next. -->
 <link rel="modulepreload" href="maths.js"><link rel="modulepreload" href="track.js"><link rel="modulepreload" href="config.js"><link rel="modulepreload" href="cut.js">
 <link rel="modulepreload" href="player.js"><link rel="modulepreload" href="media/extract.js"><link rel="modulepreload" href="media/mp4.js"><link rel="modulepreload" href="media/probe.js">
+<link rel="modulepreload" href="cutting/stage.js"><link rel="modulepreload" href="cutting/draw.js"><link rel="modulepreload" href="cutting/progress.js"><link rel="modulepreload" href="cutting/math.js">
+<link rel="modulepreload" href="cutting/sound.js"><link rel="modulepreload" href="cutting/reveal.js"><link rel="modulepreload" href="cutting/duration.js">
 </head>
 <body class="start">
 
@@ -165,17 +167,44 @@
   <!-- Shown while a file is dragged over the page and this step can take a video. -->
   <div class="s-veil" id="cut-veil" aria-hidden="true" hidden><p>Drop your video</p></div>
 
-  <div class="s-view" data-view="busy" hidden>
-    <div class="s-body">
-      <h1 id="busy-h" tabindex="-1"></h1>
-      <p class="s-lead" id="busy-lead"></p>
-      <div class="s-prog" id="busy-prog" role="progressbar" aria-labelledby="busy-step" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+  <!-- The cutting screen, after the app's (app/src/features/cutting/CuttingScreen.tsx): the visitor's own video rolled
+       out as a timeline, the engine's five steps shown on it, then the real cut made on it and its receipt printed
+       (cutting/stage.js). The picture is the canvas; the words are text, so a screen reader can read them. -->
+  <div class="s-view c-view" data-view="busy" hidden>
+    <div class="s-body c-body">
+      <h1 class="sr" id="busy-h" tabindex="-1"></h1>
+      <p class="c-sub" id="busy-lead"></p>
+      <div class="c-stage" id="c-stage" role="progressbar" aria-labelledby="busy-step" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <canvas id="c-canvas" aria-hidden="true"></canvas>
+        <p class="c-said" id="c-said" aria-hidden="true"><span class="c-saying"><span></span></span></p>
+        <div class="c-foot" id="c-foot" aria-hidden="true">
+          <div class="c-line"><span class="c-label" id="c-label"></span><span class="c-pct" id="c-pct">0%</span></div>
+          <div class="c-detail" id="c-detail"><span id="c-detail-text"></span><span class="c-stepof" id="c-stepof"></span></div>
+        </div>
+        <div class="c-slip" id="c-slip" aria-hidden="true" hidden>
+          <div class="c-feed" id="c-feed">
+            <i class="c-slot"></i>
+            <div class="c-paper" id="c-paper"></div>
+            <svg class="c-tear" id="c-tear" height="5" aria-hidden="true"><path d=""/></svg>
+          </div>
+        </div>
+      </div>
       <p class="sr" id="busy-step" role="status" aria-live="polite"></p>
-      <ol class="s-stages" id="busy-stages" aria-hidden="true">
-        <li>Uploading your take</li><li>Writing out every word</li><li>Picking your best takes</li><li>Making the cuts</li><li>Checking every cut</li>
-      </ol>
+      <div class="c-tips" id="c-tips">
+        <div class="c-card">
+          <div class="c-tip-head">
+            <button type="button" class="c-arrow" data-tip="-1" aria-label="Previous tip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5"/></svg></button>
+            <span class="c-tip-n" id="c-tip-n"></span>
+            <button type="button" class="c-arrow" data-tip="1" aria-label="Next tip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4.5 13.5 10 8 15.5"/></svg></button>
+          </div>
+          <div class="c-tip-cell"><div class="c-tip-sizer" id="c-tip-sizer" aria-hidden="true"></div><p class="c-tip" id="c-tip" aria-live="polite"></p></div>
+        </div>
+      </div>
     </div>
-    <div class="s-foot"><button type="button" class="btn btn-quiet btn-lg" data-act="stop">Stop</button></div>
+    <div class="s-foot c-actions">
+      <button type="button" class="btn btn-quiet" data-act="stop">Stop</button>
+      <button type="button" class="btn btn-red btn-lg" data-act="watch" hidden>Watch your cut</button>
+    </div>
   </div>
 
   <div class="s-view" data-view="problem" hidden>
