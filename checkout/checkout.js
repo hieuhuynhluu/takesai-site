@@ -17,6 +17,10 @@ const APP_STORE = "/beta/";
 const SALE = { on: false, start: Date.parse("2026-11-27T04:00:00Z"), end: Date.parse("2026-12-01T04:00:00Z"),
   price: { starter: "$79.99", pro: "$199.99", ultimate: "$359.99" } };
 const saleNow = () => SALE.on && Date.now() >= SALE.start && Date.now() < SALE.end;
+// The trial shown before any code is applied: none at all, or an affiliate's ?ref= link. Must match create-checkout's.
+// From 1 Dec (retention R-13, R-14): link 14 once the App shell's checkout gives it, standard 7 on the founder's go
+// (docs/marketing/retention-copy.md, switches B and C).
+const TRIAL = { standard: 3, link: 7 };
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -75,7 +79,7 @@ function checkoutPage() {
       days = "Set by your code";
       then = `Your code's trial (7, 14 or 30 days) is applied at checkout. Then ${price} ${per} plus any tax, renewing until you cancel. Cancel before the trial ends and you pay nothing.`;
     } else {
-      const n = referral() ? 7 : 3;
+      const n = referral() ? TRIAL.link : TRIAL.standard;
       days = `${n} days`;
       then = `Then ${price} ${per} plus any tax from ${dateIn(n)}, renewing until you cancel. Cancel before then and you pay nothing.`;
     }
@@ -107,7 +111,7 @@ function checkoutPage() {
   function cta() {
     if (applied && applied.free) return "Get Ultimate free";
     if (noTrial || (sale && pick("period") === "yearly")) return "Subscribe";
-    const n = applied ? applied.days : referral() ? 7 : 3;
+    const n = applied ? applied.days : referral() ? TRIAL.link : TRIAL.standard;
     return n ? `Start ${n}-day free trial` : "Start free trial";
   }
 
