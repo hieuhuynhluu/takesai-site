@@ -135,6 +135,7 @@
   <li class="if-trial">To take payment for plans bought on takesai.app, work out tax, and credit the affiliate or partner who referred you.</li>
   <li class="if-trial">To count which channels bring paying customers, from your optional answer to "How did you hear about us?"</li>
   <li>To suggest a plan and show the editing time you could save, from your setup answers.</li>
+  <li>To give one free cut on takesai.app/start to each person, and to see which of its steps people finish (section 12).</li>
   <li>To keep the service secure, prevent abuse and meet our legal obligations.</li>
 </ul>
 <p>In the app, and with everything the app sends us, we do <strong>not</strong>:</p>
@@ -175,6 +176,7 @@
   <li><span>Apple and Google</span><span>Sign-in, app store purchases and notification delivery</span></li>
   <li><span>Expo</span><span>Sends push notifications and delivers app updates</span></li>
   <li><span>PostHog</span><span>Usage data and error reports (United States)</span></li>
+  <li><span>Cloudflare</span><span>Turnstile: checks that a visitor asking for a free cut on takesai.app is a person; receives that browser's details and IP address</span></li>
   <li class="if-board"><span>Featurebase (CORDNET OÜ)</span><span>Runs our feature board at feedback.takesai.app; receives your account ID, sign-in email and handle when you open it, under a data processing agreement (European Union)</span></li>
   <li><span>Google ML Kit (Android)</span><span>Finds faces on your phone for Retouch. Sends Google technical diagnostics (device model, Android and app version, how fast it ran), never images or anything about faces</span></li>
   <li><span>Meta and TikTok</span><span>Ad measurement on the takesai.app website only (section 12)</span></li>
@@ -203,6 +205,9 @@
   <li><span>Server logs (IDs only, no transcript text)</span><span>30 days</span></li>
   <li><span>Usage data and error reports</span><span>12 months. The usage profile it is linked to (account ID, device details, "How did you hear about us?") until you delete your account</span></li>
   <li class="if-board"><span>Feature board profile, posts, comments and votes at Featurebase</span><span>Your profile: until you delete your TakesAI account, when we delete it at Featurebase. What you posted stays on the board without your name.</span></li>
+  <li><span>A free cut on takesai.app: the anonymous account, its sound and its cut</span><span>Deleted 30 days after the account was made (the sound sooner, as above)</span></li>
+  <li><span>One-way code made from your IP address (free cuts on takesai.app)</span><span>24 hours</span></li>
+  <li><span>Usage events from takesai.app/start (no profile)</span><span>12 months</span></li>
   <li><span>Problem reports</span><span>12 months after you send them, or with your account if you delete it sooner</span></li>
   <li><span>Website ad data at Meta and TikTok</span><span>Kept by them under their own policies. Their cookies stay in your browser until they expire or you clear them.</span></li>
   <li><span>Your privacy choice on takesai.app</span><span>In your browser, until you change it or clear the site's data</span></li>
@@ -280,6 +285,13 @@
 
 <h3>Links from creators</h3>
 <p>A link such as takesai.app/go/name sends you on to the App Store with a tag that names the link you came through. Apple then shows us how many downloads each link brought, as totals. It does not tell us who you are.</p>
+
+<h3 id="free-cut">A free cut on takesai.app/start</h3>
+<p>On takesai.app/start you can answer a few questions and have one video of your own cut for free, with no sign-up and no card. Your video stays on your device: your browser makes the same two small files the app makes (the sound, as a voice-quality mono copy, and the frame times) and sends only those, with the video's length and a fingerprint of each file. They go to the same services as in the app (section 4) and are kept for the same times (section 7). Your answers stay in your browser, apart from the usage events below.</p>
+<p>For the free cut, your browser gets an anonymous account, remembered in its local storage, so that each browser gets one free cut. <strong>Cloudflare Turnstile</strong> checks that you are a person, not a bot; Cloudflare receives your browser's details and IP address for that check. To limit free cuts, we keep a one-way code made from your IP address for 24 hours. The anonymous account is deleted, with its sound and cut, 30 days after it was made.</p>
+
+<h3>Usage of takesai.app/start</h3>
+<p>The page tells PostHog which steps you see, the answers you pick (such as how many videos you post) and the kind of link you came from (such as an ad, a message or a creator's link). Each visit gets a random ID that lasts only while the page is open: no cookie is set, no profile is made and no location is worked out from your IP address. These events never include your video, its file name, its words or your email address. They are not ad measurement and go to no one but PostHog, which works for us, so they are sent whether or not you opted out of ad measurement.</p>
 
 <h3>Hosting</h3>
 <p>The site is hosted by GitHub Pages, which may log visitors' IP addresses.</p>
