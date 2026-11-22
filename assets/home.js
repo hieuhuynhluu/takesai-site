@@ -90,24 +90,30 @@
     }
 
     // Each part's bars and frames are counted once per change, for the width the part is heading to, and never while the
-    // parts animate: both are flex: 1 and stretch with it (rebuilding them every frame of the 0.9 s made the toggle and the
-    // receipt jitter). A part that shrinks keeps its own until the parts have settled, so its bars never thicken on the way.
-    // `now` counts every part at once (the first draw, a resize).
+    // parts animate (rebuilding them every frame of the 0.9 s made the toggle and the receipt jitter). The frames are
+    // flex: 1 and stretch with the part, so a part that shrinks keeps its own until the parts have settled; the bars are one
+    // fixed width, so a part gets its new count at once. `now` counts every part at once (the first draw, a resize).
     function fit(now) {
       var on = SEGS.filter(function (sg) { return !sg.el.classList.contains('gone'); }), secs = 0;
       on.forEach(function (sg) { secs += sg.e - sg.s; });
       // Every part on show has the same margin after it (the playhead is the track's last child).
+      var wv = getComputedStyle(KEPT1.el.firstChild), bar = { w: parseFloat(wv.getPropertyValue('--bw')), gap: parseFloat(wv.columnGap), pad: parseFloat(wv.paddingLeft) };
       var room = track.clientWidth - on.length * parseFloat(getComputedStyle(KEPT1.el).marginRight), fw = KEPT1.el.lastChild.clientHeight * FA;
       if (room <= 0 || !fw) return;
       clearTimeout(settleT); if (!now) settleT = setTimeout(fit, 950, true); // .clip's flex-grow runs 0.9 s
-      on.forEach(function (sg) { var w = room * (sg.e - sg.s) / secs; wave(sg, w, now); strip(sg, w / fw, now); });
+      on.forEach(function (sg) {
+        var w = room * (sg.e - sg.s) / secs;
+        sg.el.style.setProperty('--r', (w / 4).toFixed(1) + 'px'); // a narrow part's corners stay a quarter of it: never a pill
+        wave(sg, w, bar); strip(sg, w / fw, now);
+      });
     }
 
-    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar at the part's width `w` (at most one a
-    // tenth of a second), so the bars stay as thin in After, where the cut spreads across the timeline, as in Before.
-    function wave(sg, w, now) {
-      var len = sg.e - sg.s, bars = Math.max(2, Math.min(Math.round(len / STEP), Math.round(w / 4))), out = '';
-      if (bars === sg.bars || (!now && bars < sg.bars)) return;
+    // Waveform bars, each the loudest stretch of the take it covers, all one width (`bar`, from the CSS) however wide the
+    // part: as many as fit its width `w` (one when only a bar fits, none in a part narrower than a bar) and at most one a
+    // tenth of a second, centred.
+    function wave(sg, w, bar) {
+      var len = sg.e - sg.s, bars = Math.max(w >= bar.w ? 1 : 0, Math.min(Math.round(len / STEP), Math.floor((w - 2 * bar.pad + bar.gap) / (bar.w + bar.gap)))), out = '';
+      if (bars === sg.bars) return;
       sg.bars = bars;
       for (var b = 0; b < bars; b++) {
         var k0 = Math.floor((sg.s + len * b / bars) / STEP), k1 = Math.min(WAVE.length - 1, Math.floor((sg.s + len * (b + 1) / bars) / STEP)), peak = 0;

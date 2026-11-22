@@ -113,9 +113,10 @@
 .track { position: relative; display: flex; height: 150px; }
 .clip { flex: var(--g) 1 0px; min-width: 0; display: flex; flex-direction: column; gap: 8px; margin-right: 3px; cursor: pointer; transition: flex-grow 0.9s var(--ease), margin 0.9s var(--ease), opacity 0.6s var(--ease); }
 .clip:last-child { margin-right: 0; }
-.wave { flex: 1; display: flex; align-items: center; gap: 2px; padding: 0 2px; border-radius: 8px; background: var(--fill); overflow: hidden; transition: background-color 0.4s, box-shadow 0.3s; }
-.wave i { flex: 1; min-width: 1px; height: var(--a); border-radius: 2px; background: var(--bar); transition: background-color 0.4s; }
-.strip { --sh: 40px; height: var(--sh); border-radius: 6px; position: relative; overflow: hidden; display: flex; }
+/* Corners: 5px, or a quarter of a narrow part (--r, home.js fit()). Bars: one width, --bw; home.js counts what fits. */
+.wave { --bw: 2px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 2px; padding: 0 2px; border-radius: min(5px, var(--r, 5px)); background: var(--fill); overflow: hidden; transition: background-color 0.4s, box-shadow 0.3s; }
+.wave i { flex: none; width: var(--bw); height: var(--a); border-radius: 2px; background: var(--bar); transition: background-color 0.4s; }
+.strip { --sh: 40px; height: var(--sh); border-radius: min(5px, var(--r, 5px)); position: relative; overflow: hidden; display: flex; }
 /* One tile per frame-width (home.js strip()): frame --f of the sprite's --n, centred in its tile, never stretched. */
 .strip i { flex: 1 1 0; min-width: 0; background: url(demo/strip.jpg) no-repeat; background-size: auto 100%; background-position: calc(50% + (var(--n) / 2 - var(--f) - 0.5) * var(--sh) * var(--fa)) 0; } /* each part shows its own frames, at their true shape */
 .strip::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgb(255 90 106 / 0.6) 0 2px, transparent 2px 6px), rgb(184 29 50 / 0.5); opacity: 0; transition: opacity 0.4s; }
@@ -168,7 +169,7 @@
   .c-top { padding: 14px 16px; gap: 8px; } .count b { font-size: 22px; } .count small { display: none; }
   .status { padding: 0 10px 0 9px; gap: 7px; font-size: 12px; }
   .c-body { padding: 18px 16px 20px; gap: 18px; }
-  .track { height: 120px; } .strip { --sh: 30px; } .clip { margin-right: 2px; } .wave { gap: 1px; padding: 0 1px; }
+  .track { height: 120px; } .strip { --sh: 30px; } .clip { margin-right: 2px; } .wave { --bw: 3px; gap: 1px; padding: 0 1px; }
   .work { gap: 20px; }
   .work-b { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .cap { font-size: 16px; -webkit-text-stroke-width: 4px; }
