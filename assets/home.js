@@ -42,7 +42,7 @@
     var undo = '<svg class="undo" viewBox="0 0 16 16"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>';
     var redo = '<svg class="redo" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><path d="M14 3 5.5 10.5M10 10l4 3M5.5 5.5 8 8"/></svg>';
     var play = '<svg class="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></svg>';
-    var D, RAW_S, SEGS, CUTS, WAVE, STEP, FRAMES, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
+    var D, RAW_S, SEGS, CUTS, KEPT1, WAVE, STEP, FRAMES, FA, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '', settleT = 0, resizeT = 0;
     var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
 
     fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
@@ -53,7 +53,7 @@
 
     function build(d) {
       D = d.duration; RAW_S = d.rawS; SEGS = d.segments; CUTS = SEGS.filter(function (sg) { return sg.cut; });
-      WAVE = d.wave; STEP = d.waveStep; FRAMES = d.stripFrames;
+      WAVE = d.wave; STEP = d.waveStep; FRAMES = d.stripFrames; FA = d.stripAspect;
       con.style.setProperty('--n', FRAMES); con.style.setProperty('--fa', d.stripAspect); // the filmstrip sprite (home.css .strip i)
       receipt.innerHTML = '<li class="head"><span>Your video</span><span>' + mm(RAW_S) + '</span></li>';
       SEGS.forEach(function (sg) {
@@ -82,33 +82,49 @@
         cur.w.push(w); cur.e = w[1];
       });
       $('m-before').textContent = mm(RAW_S);
-      // Each part's bars and frames follow its width as it grows or closes up (After, a restore, a resize).
-      var ro = new ResizeObserver(function (es) { es.forEach(function (e) { SEGS.forEach(function (sg) { if (sg.el === e.target) { wave(sg); strip(sg); } }); }); });
-      SEGS.forEach(function (sg) { ro.observe(sg.el); });
+      KEPT1 = SEGS.filter(function (sg) { return !sg.cut; })[0];
+      fit(true);
+      new ResizeObserver(function () { clearTimeout(resizeT); resizeT = setTimeout(fit, 150, true); }).observe(track); // a real resize
       labels();
       if (visible) begin();
     }
 
-    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar at the part's own current width (at
-    // most one a tenth of a second), so the bars stay as thin in After, where the cut spreads across the timeline, as in Before.
-    function wave(sg) {
-      var w = sg.el.clientWidth, len = sg.e - sg.s, bars = Math.max(2, Math.min(Math.round(len / STEP), Math.round(w / 4))), out = '';
-      if (!w) return;
+    // Each part's bars and frames are counted once per change, for the width the part is heading to, and never while the
+    // parts animate: both are flex: 1 and stretch with it (rebuilding them every frame of the 0.9 s made the toggle and the
+    // receipt jitter). A part that shrinks keeps its own until the parts have settled, so its bars never thicken on the way.
+    // `now` counts every part at once (the first draw, a resize).
+    function fit(now) {
+      var on = SEGS.filter(function (sg) { return !sg.el.classList.contains('gone'); }), secs = 0;
+      on.forEach(function (sg) { secs += sg.e - sg.s; });
+      // Every part on show has the same margin after it (the playhead is the track's last child).
+      var room = track.clientWidth - on.length * parseFloat(getComputedStyle(KEPT1.el).marginRight), fw = KEPT1.el.lastChild.clientHeight * FA;
+      if (room <= 0 || !fw) return;
+      clearTimeout(settleT); if (!now) settleT = setTimeout(fit, 950, true); // .clip's flex-grow runs 0.9 s
+      on.forEach(function (sg) { var w = room * (sg.e - sg.s) / secs; wave(sg, w, now); strip(sg, w / fw, now); });
+    }
+
+    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar at the part's width `w` (at most one a
+    // tenth of a second), so the bars stay as thin in After, where the cut spreads across the timeline, as in Before.
+    function wave(sg, w, now) {
+      var len = sg.e - sg.s, bars = Math.max(2, Math.min(Math.round(len / STEP), Math.round(w / 4))), out = '';
+      if (bars === sg.bars || (!now && bars < sg.bars)) return;
+      sg.bars = bars;
       for (var b = 0; b < bars; b++) {
         var k0 = Math.floor((sg.s + len * b / bars) / STEP), k1 = Math.min(WAVE.length - 1, Math.floor((sg.s + len * (b + 1) / bars) / STEP)), peak = 0;
         for (var k = k0; k <= k1; k++) peak = Math.max(peak, WAVE[k] || 0);
         out += '<i style="--a:' + Math.max(5, Math.round(peak * 100)) + '%"></i>';
       }
-      if (sg.el.firstChild.innerHTML !== out) sg.el.firstChild.innerHTML = out;
+      sg.el.firstChild.innerHTML = out;
     }
 
-    // Frames by time, like the waveform: about one frame per frame-width of the part, each the frame at its tile's middle.
-    function strip(sg) {
-      var el = sg.el.lastChild, fw = el.clientHeight * parseFloat(con.style.getPropertyValue('--fa')), len = sg.e - sg.s, out = '';
-      if (!fw) return;
-      var n = Math.max(1, Math.round(sg.el.clientWidth / fw));
+    // Frames by time, like the waveform: one frame per frame-width of the part (`frames` of them), each the frame at its
+    // tile's middle.
+    function strip(sg, frames, now) {
+      var n = Math.max(1, Math.round(frames)), len = sg.e - sg.s, out = '';
+      if (n === sg.tiles || (!now && n < sg.tiles)) return;
+      sg.tiles = n;
       for (var i = 0; i < n; i++) out += '<i style="--f:' + Math.min(FRAMES - 1, Math.round((sg.s + len * (i + 0.5) / n) * 2)) + '"></i>';
-      if (el.innerHTML !== out) el.innerHTML = out;
+      sg.el.lastChild.innerHTML = out;
     }
 
     // ---- time and geometry ----
@@ -121,7 +137,7 @@
     function rawToCut(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (sg.cut) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
     function elapsed(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (!plays(sg)) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
     function firstPlaying(from) { for (var i = 0; i < SEGS.length; i++) if (plays(SEGS[i]) && SEGS[i].e > from) return SEGS[i]; return null; }
-    function placePH(sg, frac) { var r = sg.el.getBoundingClientRect(), tr = track.getBoundingClientRect(); ph.style.transform = 'translateX(' + (r.left - tr.left + Math.min(1, Math.max(0, frac)) * r.width) + 'px)'; }
+    function placePH(sg, frac) { ph.style.transform = 'translateX(' + (sg.el.offsetLeft + Math.min(1, Math.max(0, frac)) * sg.el.offsetWidth) + 'px)'; } // .track is the parts' offset parent
 
     // ---- labels: the switch, the counter, the ruler, the total ----
     function setCount(v, label) {
@@ -201,7 +217,7 @@
         sg.btn.setAttribute('aria-label', (m === 'before' ? 'Play ' : sg.back ? 'Cut ' : 'Bring back ') + sg.cut);
       });
       vRaw.playbackRate = 1; vRaw.loop = true;
-      labels();
+      labels(); fit();
     }
     function settle() { // everything printed, the cut made, After ready
       timers.forEach(clearTimeout); timers = [];
@@ -216,6 +232,7 @@
       total.classList.remove('in'); hint.classList.remove('in');
       mode = 'before'; modeSet.querySelector('[value="before"]').checked = true; cbody.classList.add('before'); labels();
       CUTS.forEach(function (sg) { sg.el.classList.remove('flag'); });
+      fit();
       phase = 'intro'; setStatus('scan', 'Finding cuts'); cap.innerHTML = ''; capKey = '';
       show(vRaw); vRaw.loop = false; vRaw.currentTime = 0; vRaw.playbackRate = 3; ph.classList.add('on'); rawIn(); // a fast connection may have finished the raw take already
       if (!paused) vRaw.play().catch(function () {});
@@ -226,7 +243,7 @@
       cbody.classList.remove('before');
       var gone = 0, n = 0;
       CUTS.forEach(function (sg) {
-        later(function () { sg.el.classList.add('flag', 'gone'); sg.li.classList.add('in'); gone += sg.sec; setCount(RAW_S - gone, 'Your cut'); ruler(RAW_S - gone); }, 300 + n * 260); n++;
+        later(function () { sg.el.classList.add('flag', 'gone'); fit(); sg.li.classList.add('in'); gone += sg.sec; setCount(RAW_S - gone, 'Your cut'); ruler(RAW_S - gone); }, 300 + n * 260); n++;
       });
       later(function () { total.classList.add('in'); $('tot').textContent = mm(afterSecs()); }, 300 + n * 260 + 150);
       later(function () { settle(); setMode('after'); go(true); }, 300 + n * 260 + 800);
@@ -240,7 +257,7 @@
     // ---- what people can do ----
     function lineTap(sg) {
       if (phase !== 'play') { settle(); }
-      if (mode === 'before') { vRaw.playbackRate = 1; vRaw.loop = true; go(false, sg.s); return; }
+      if (mode === 'before') { vRaw.playbackRate = 1; vRaw.loop = true; go(false, sg.s + 0.01); return; } // + 0.01 s: the frame make-demo.py keys
       sg.back = !sg.back; sg.li.classList.toggle('restored', sg.back);
       setMode('after'); setStatus('ready', sg.back ? sg.cut + ' is back' : 'Cut ready');
       if (anyBack()) { // play from just before the part, so it is heard in place

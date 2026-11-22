@@ -248,6 +248,7 @@
 .p-frame { position: relative; --ar: 0.5625; width: min(100%, calc(clamp(200px, 100dvh - 440px, 460px) * var(--ar))); aspect-ratio: var(--ar); margin: 0 auto; border-radius: 20px; overflow: hidden; background: #000;
   box-shadow: 0 0 0 1px var(--line-2), var(--shadow-lg); cursor: pointer; }
 .p-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.p-frame video.off { visibility: hidden; } /* the example's take while its cut file is on show, or the other way round */
 /* Captions in the app's default look, to the frame's scale (app/src/features/editor/captions/presets.ts): 3.4% of the
    frame's height, the heaviest weight, an outline 0.16 of the size with half of it under the letters, centred 78% of the
    way down, at most 84% of the width. Never under 10px, so a small frame on a phone can still be read. */
@@ -273,7 +274,7 @@
 .p-mode label:has(:checked) b { color: var(--text-2); }
 /* The timeline: the take's loudness, kept parts in ink and cut parts in red. A cut part closes up in After. */
 .p-track { position: relative; display: flex; height: 36px; margin: 14px 0 0; }
-.p-part { flex: var(--g) 1 0px; min-width: 0; display: flex; align-items: center; gap: 1px; margin-right: 2px; padding: 0 2px; border: 0; border-radius: 6px; background: var(--fill); overflow: hidden; cursor: pointer;
+.p-part { flex: var(--g) 1 0px; min-width: 0; display: flex; align-items: center; gap: 1px; margin-right: 1px; padding: 0; border: 0; border-radius: 6px; background: var(--fill); overflow: hidden; cursor: pointer;
   transition: flex-grow 0.9s var(--ease), margin 0.9s var(--ease), opacity 0.6s var(--ease), background-color 0.4s; }
 .p-part:last-of-type { margin-right: 0; }
 .p-part i { flex: 1; min-width: 1px; height: var(--a); border-radius: 1px; background: var(--bar); transition: background-color 0.4s; }
@@ -281,7 +282,7 @@
 .p-part.x i { background: var(--red); }
 .p-part.x.back { background: var(--fill-2); box-shadow: inset 0 0 0 1px var(--line-3); }
 .p-part.x.back i { background: var(--bar); }
-.p-part.gone { flex-grow: 0.0001; margin-right: 0; padding: 0; opacity: 0; pointer-events: none; }
+.p-part.gone { flex-grow: 0.0001; margin-right: 0; opacity: 0; pointer-events: none; }
 .p-part.hot { box-shadow: inset 0 0 0 1.5px var(--text); }
 .p-head { position: absolute; top: -4px; bottom: -4px; left: 0; width: 2px; border-radius: 1px; background: var(--text); pointer-events: none; will-change: transform; }
 /* The receipt: each removed line is the button that brings its parts back (After) or plays them (Before). */

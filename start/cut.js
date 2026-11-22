@@ -135,7 +135,7 @@ async function showExample(from) {
     if (phase !== 'example') return;
     const data = { duration: demo.duration, wave: demo.wave, waveStep: demo.waveStep, words: demo.words,
       segments: demo.segments.map((sg) => ({ s: sg.s, e: sg.e, ...(sg.cut ? { reason: REASON[sg.cut.replace(/ #\d+$/, '')] ?? 'dead_air' } : {}) })) };
-    showPlayer({ src: '../assets/demo/raw.mp4', poster: '../assets/demo/poster.jpg', data, title: 'Here’s one we cut.', from: 'example',
+    showPlayer({ src: '../assets/demo/raw.mp4', cutSrc: '../assets/demo/cut.mp4', poster: '../assets/demo/poster.jpg', data, title: 'Here’s one we cut.', from: 'example',
       note: 'A real take and its real cut. TakesAI does this to every video you send.', own: enabled && canRead && store.get(CUT)?.state !== 'ready' });
     ctx.track('start_example_opened', { from });
   } catch { problem('internal', 'refused'); }
