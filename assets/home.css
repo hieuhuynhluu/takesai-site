@@ -268,8 +268,8 @@
   @keyframes ready20 { 0%, 8% { filter: grayscale(1) brightness(0.45); opacity: 1; } 20%, 86% { filter: none; opacity: 1; } 100% { filter: grayscale(1) brightness(0.45); } }
 }
 @media (prefers-reduced-motion: reduce) { .grid20 i { filter: none; } }
-.in .grid20 i:nth-child(4n+1) { background-image: url(frame-50.webp); } .in .grid20 i:nth-child(4n+2) { background-image: url(frame-70.webp); }
-.in .grid20 i:nth-child(4n+3) { background-image: url(frame-160.webp); } .in .grid20 i:nth-child(4n) { background-image: url(frame-230.webp); }
+.in .grid20 i:nth-child(4n+1) { background-image: url(frame-164.webp); } .in .grid20 i:nth-child(4n+2) { background-image: url(frame-228.webp); }
+.in .grid20 i:nth-child(4n+3) { background-image: url(frame-489.webp); } .in .grid20 i:nth-child(4n) { background-image: url(frame-1236.webp); }
 /* The looping demos rest while off screen (home.js marks the visible ones .live). */
 .js .viz:not(.live) *, .js .viz:not(.live) *::before, .js .viz:not(.live) *::after { animation-play-state: paused; }
 .g-k { margin: 12px 0 0; font-size: 13px; color: var(--text-3); }

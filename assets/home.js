@@ -42,7 +42,7 @@
     var undo = '<svg class="undo" viewBox="0 0 16 16"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>';
     var redo = '<svg class="redo" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><path d="M14 3 5.5 10.5M10 10l4 3M5.5 5.5 8 8"/></svg>';
     var play = '<svg class="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></svg>';
-    var D, RAW_S, SEGS, CUTS, WAVE, STEP, FRAMES, drawnW = 0, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
+    var D, RAW_S, SEGS, CUTS, WAVE, STEP, FRAMES, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '';
     var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
 
     fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
@@ -82,28 +82,24 @@
         cur.w.push(w); cur.e = w[1];
       });
       $('m-before').textContent = mm(RAW_S);
-      waves(); new ResizeObserver(waves).observe(track); // a window narrowed or a phone turned redraws the bars to fit
-      // Each part's frames follow its width as it grows or closes up (After, a restore, a resize).
-      var ro = new ResizeObserver(function (es) { es.forEach(function (e) { SEGS.forEach(function (sg) { if (sg.el === e.target) strip(sg); }); }); });
+      // Each part's bars and frames follow its width as it grows or closes up (After, a restore, a resize).
+      var ro = new ResizeObserver(function (es) { es.forEach(function (e) { SEGS.forEach(function (sg) { if (sg.el === e.target) { wave(sg); strip(sg); } }); }); });
       SEGS.forEach(function (sg) { ro.observe(sg.el); });
       labels();
       if (visible) begin();
     }
 
-    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar for the timeline's current width,
-    // so the bars never push the timeline wider than its card.
-    function waves() {
-      var tw = track.clientWidth; if (!tw || Math.abs(tw - drawnW) < 24) return; drawnW = tw;
-      var perSec = Math.max(2, Math.min(7, tw / D / 4));
-      SEGS.forEach(function (sg) {
-        var len = sg.e - sg.s, bars = Math.max(2, Math.round(len * perSec)), w = '';
-        for (var b = 0; b < bars; b++) {
-          var k0 = Math.floor((sg.s + len * b / bars) / STEP), k1 = Math.min(WAVE.length - 1, Math.floor((sg.s + len * (b + 1) / bars) / STEP)), peak = 0;
-          for (var k = k0; k <= k1; k++) peak = Math.max(peak, WAVE[k] || 0);
-          w += '<i style="--a:' + Math.max(5, Math.round(peak * 100)) + '%"></i>';
-        }
-        sg.el.firstChild.innerHTML = w;
-      });
+    // Waveform bars, each the loudest tenth of a second it covers, about 4 px a bar at the part's own current width (at
+    // most one a tenth of a second), so the bars stay as thin in After, where the cut spreads across the timeline, as in Before.
+    function wave(sg) {
+      var w = sg.el.clientWidth, len = sg.e - sg.s, bars = Math.max(2, Math.min(Math.round(len / STEP), Math.round(w / 4))), out = '';
+      if (!w) return;
+      for (var b = 0; b < bars; b++) {
+        var k0 = Math.floor((sg.s + len * b / bars) / STEP), k1 = Math.min(WAVE.length - 1, Math.floor((sg.s + len * (b + 1) / bars) / STEP)), peak = 0;
+        for (var k = k0; k <= k1; k++) peak = Math.max(peak, WAVE[k] || 0);
+        out += '<i style="--a:' + Math.max(5, Math.round(peak * 100)) + '%"></i>';
+      }
+      if (sg.el.firstChild.innerHTML !== out) sg.el.firstChild.innerHTML = out;
     }
 
     // Frames by time, like the waveform: about one frame per frame-width of the part, each the frame at its tile's middle.
@@ -278,9 +274,9 @@
     }, { threshold: 0.15 }).observe(con);
   })();
 
-  /* ---------- Captions tile: real word times (ElevenLabs, clip1 15.298 s on) ---------- */
+  /* ---------- Captions tile: real word times (ElevenLabs, the down-jacket take 48.470 s on, a kept line) ---------- */
   var cv = $('capvid'), cw = $('capwords'), cf = $('capframe'), csnd = $('capsnd'), capRaf = 0;
-  var LINES = [[0, 0.46, [["you'll", 0.03], ['find', 0.15], ['that', 0.33]]], [0.46, 1.5, [['it', 0.47], ['tastes', 0.61], ['really', 1.07], ['good', 1.31]]], [1.5, 9, [['when', 1.51], ['you', 1.6], ['try', 1.73], ['it.', 1.97]]]];
+  var LINES = [[0, 0.85, [["It's", 0.05], ['super', 0.21], ['light,', 0.53]]], [0.85, 1.5, [['but', 0.89], ["it's", 0.97], ['actually', 1.13]]], [1.5, 9, [['really', 1.53], ['warm.', 1.85]]]];
   function capDraw(t) {
     var L = LINES.filter(function (l) { return t >= l[0] && t < l[1]; })[0] || LINES[1], k = 0;
     L[2].forEach(function (w, i) { if (t >= w[1]) k = i; });
