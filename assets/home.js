@@ -258,6 +258,7 @@
     function introDone() {
       phase = 'cut'; vRaw.pause(); vRaw.playbackRate = 1; setStatus('cut', 'Cutting'); ph.classList.remove('on'); loadCut();
       cbody.classList.remove('before');
+      CUTS.forEach(function (sg) { sg.li.classList.remove('now'); sg.el.classList.remove('now'); }); // the playhead has gone: no line is playing
       var gone = 0, n = 0;
       CUTS.forEach(function (sg) {
         later(function () { sg.el.classList.add('flag', 'gone'); fit(); sg.li.classList.add('in'); gone += sg.sec; setCount(RAW_S - gone, 'Your cut'); ruler(RAW_S - gone); }, 300 + n * 260); n++;
@@ -322,6 +323,10 @@
     });
     track.addEventListener('pointercancel', function () { var was = press && press.on; press = null; if (was) go(false); });
     function pick(m) {
+      // After in the opening makes the cut before your eyes, as the opening's end does (founder, 2026-11-22: "if i'm
+      // impatient and click "after" before the whole animation plays, I don't get it"): every cut part turns red, then
+      // they close up one by one and After plays.
+      if (phase === 'intro' && m === 'after') { cancelAnimationFrame(raf); CUTS.forEach(function (sg) { sg.el.classList.add('flag'); }); introDone(); return; }
       if (phase !== 'play') { cancelAnimationFrame(raf); vRaw.pause(); settle(); }
       setMode(m); setStatus(m === 'before' ? 'raw' : 'ready', m === 'before' ? 'Raw take' : 'Cut ready'); go(true);
     }
