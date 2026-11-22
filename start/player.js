@@ -11,11 +11,12 @@
 // The receipt's lines in print order: the app's own families (app/src/features/cutting/progress/reveal.ts).
 const FAMILIES = [
   { key: 'dead_air', reasons: ['lead_in', 'tail', 'dead_air', 'pause_shortened'], one: 'Dead air', many: 'Dead air', counted: false },
+  { key: 'demo', reasons: ['dead_air'], demo: true, one: 'Silent demo', many: 'Silent demos', counted: true },
   { key: 'retake', reasons: ['retake'], one: 'Retake', many: 'Retakes', counted: true },
   { key: 'filler', reasons: ['filler', 'stutter'], one: 'Filler', many: 'Fillers', counted: true },
   { key: 'other', reasons: ['false_start', 'meta', 'off_topic'], one: 'Other mistake', many: 'Other mistakes', counted: true },
 ];
-const familyOf = (reason) => (FAMILIES.find((f) => f.reasons.includes(reason)) ?? FAMILIES[0]).key;
+const familyOf = (reason, demo) => (FAMILIES.find((f) => f.reasons.includes(reason) && !demo === !f.demo) ?? FAMILIES[0]).key;
 
 const mm = (s) => { s = Math.max(0, Math.round(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 /** Tenths of a second as 0:15.6. The receipt is added up in whole tenths, so its lines always sum to its total. */
@@ -42,11 +43,11 @@ const MARKUP = `
 <div class="r-wrap"><ol class="receipt p-receipt" aria-label="Receipt for this cut"></ol></div>
 <p class="p-hint"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>Tap a line to bring that part back.</p>`;
 
-/** data: { duration, segments: [{ s, e, reason? }], wave, waveStep, words: [[s, e, text]] }, times in seconds.
+/** data: { duration, segments: [{ s, e, reason?, demo? }], wave, waveStep, words: [[s, e, text]] }, times in seconds.
  *  cutSrc: the kept parts already joined, in order (the site's example), or none. */
 export function mount(root, { src, cutSrc, poster, data, onRestore = () => {} }) {
   const D = data.duration, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const parts = data.segments.map((sg) => ({ s: sg.s, e: sg.e, family: sg.reason ? familyOf(sg.reason) : null }));
+  const parts = data.segments.map((sg) => ({ s: sg.s, e: sg.e, family: sg.reason ? familyOf(sg.reason, sg.demo) : null }));
   const lines = FAMILIES.map((f) => ({ ...f, parts: parts.filter((p) => p.family === f.key) })).filter((l) => l.parts.length)
     .map((l) => ({ ...l, t: Math.round(l.parts.reduce((n, p) => n + p.e - p.s, 0) * 10), label: l.counted && l.parts.length > 1 ? `${l.many} ×${l.parts.length}` : l.one }));
   const rawT = Math.round(D * 10), back = new Set();
@@ -87,7 +88,6 @@ export function mount(root, { src, cutSrc, poster, data, onRestore = () => {} })
     p.el = document.createElement('div');
     p.el.className = 'p-part' + (p.family ? ' x' : '');
     p.el.style.setProperty('--g', (p.e - p.s).toFixed(3));
-    p.el.addEventListener('click', () => { if (plays(p)) go(p.s); });
     track.insertBefore(p.el, head);
   }
   const PITCH = 3; // a 2-point bar and a 1-point gap
@@ -200,8 +200,9 @@ export function mount(root, { src, cutSrc, poster, data, onRestore = () => {} })
     // The other video leaves once this one shows the frame asked for: a seek still running would flash the frame it left.
     const swap = () => { if ((onCut() ? vc : v) === x) { x.classList.remove('off'); other?.classList.add('off'); } };
     if (x.seeking) x.addEventListener('seeked', swap, { once: true }); else swap();
-    // A browser that refuses to start (sound on with no tap) shows the play button instead.
-    x.play().then(() => { raf = requestAnimationFrame(tick); }, () => pause());
+    // A browser that refuses to start (sound on with no tap) shows the play button instead. A play() cut short by a pause
+    // of ours (a drag on the timeline grabbing it) is not a refusal: the visitor still wants it playing.
+    x.play().then(() => { raf = requestAnimationFrame(tick); }, (e) => { if (e?.name !== 'AbortError') pause(); });
   }
   function pause() {
     wanted = false;
@@ -249,6 +250,32 @@ export function mount(root, { src, cutSrc, poster, data, onRestore = () => {} })
     go(isBack ? (plays(partAt(from)) ? from : first.s) : firstPlaying(first.e)?.s ?? firstPlaying(-1)?.s);
   }
   q('.p-mode').addEventListener('change', (e) => { mode = e.target.value; labels(); go(); });
+
+  // ---- the timeline: a tap or a drag lands where it is made, playing or paused (site/README.md, "The timelines' taps") ----
+  /** The take's time under the pointer, over the parts on show: the inverse of draw's playhead (a seam belongs to the part
+   *  before it). Measured as drawn, to the fraction of a pixel: the seams are 1 point. */
+  const timeAt = (x) => {
+    const on = parts.filter(plays), p = on.find((_, i) => i === on.length - 1 || x < on[i + 1].el.getBoundingClientRect().left), r = p.el.getBoundingClientRect();
+    return Math.min(p.e - 0.02, p.s + Math.min(1, Math.max(0, (x - r.left) / r.width)) * (p.e - p.s)); // a seek's + 0.01 s stays in the part
+  };
+  const scrub = (x) => { seek(timeAt(x)); draw(now()); };
+  // A mouse seeks as it presses and scrubs as it drags; a finger seeks when it lifts, or scrubs once it moves sideways, and
+  // a finger that moves up or down is scrolling the page (.p-track is touch-action: pan-y), so it never moves the video.
+  let press = null;
+  const grab = (x, drag) => { press.on = true; if (drag) track.setPointerCapture(press.id); cancelAnimationFrame(raf); v.pause(); vc?.pause(); scrub(x); }; // a drag keeps the pointer past the track's ends
+  const release = () => { const was = press?.on; press = null; if (was && wanted) play(); };
+  track.addEventListener('pointerdown', (e) => {
+    if (e.button) return;
+    press = { id: e.pointerId, x: e.clientX, y: e.clientY, on: false };
+    if (e.pointerType === 'mouse') grab(e.clientX, true);
+  });
+  track.addEventListener('pointermove', (e) => {
+    if (!press || e.pointerId !== press.id) return;
+    if (!press.on) { const dx = Math.abs(e.clientX - press.x), dy = Math.abs(e.clientY - press.y); if (dy > 8 && dy >= dx) { press = null; return; } if (dx <= 8) return; return grab(e.clientX, true); }
+    scrub(e.clientX);
+  });
+  track.addEventListener('pointerup', (e) => { if (!press || e.pointerId !== press.id) return; if (!press.on) grab(e.clientX); release(); });
+  track.addEventListener('pointercancel', release);
   frame.addEventListener('click', (e) => { if (e.target.closest('.p-snd')) return; if (wanted) pause(); else play(); });
   snd.addEventListener('click', () => { v.muted = !v.muted; if (vc) vc.muted = v.muted; snd.setAttribute('aria-pressed', String(!v.muted)); if (!v.muted && !wanted) play(); });
   v.addEventListener('ended', () => { if (wanted) go(); });

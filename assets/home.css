@@ -110,12 +110,15 @@
 /* Timeline */
 .timeline { position: relative; min-width: 0; }
 .ruler { display: flex; justify-content: space-between; font: 500 11px/1 var(--mono); color: var(--text-3); margin-bottom: 12px; font-variant-numeric: tabular-nums; }
-.track { position: relative; display: flex; height: 150px; }
-.clip { flex: var(--g) 1 0px; min-width: 0; display: flex; flex-direction: column; gap: 8px; margin-right: 3px; cursor: pointer; transition: flex-grow 0.9s var(--ease), margin 0.9s var(--ease), opacity 0.6s var(--ease); }
+.track { --bw: 2px; --bp: 2px; position: relative; display: flex; height: 150px; cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; } /* a bar's width, the wave's side padding; a sideways drag scrubs, an upward one scrolls */
+/* Every part on show is wide enough for one whole bar. */
+.clip { flex: var(--g) 1 0px; min-width: calc(var(--bw) + 2 * var(--bp)); display: flex; flex-direction: column; gap: 8px; margin-right: 3px; cursor: pointer; transition: flex-grow 0.9s var(--ease), min-width 0.9s var(--ease), margin 0.9s var(--ease), opacity 0.6s var(--ease); }
 .clip:last-child { margin-right: 0; }
-/* Corners: 5px, or a quarter of a narrow part (--r, home.js fit()). Bars: one width, --bw; home.js counts what fits. */
-.wave { --bw: 2px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 2px; padding: 0 2px; border-radius: min(5px, var(--r, 5px)); background: var(--fill); overflow: hidden; transition: background-color 0.4s, box-shadow 0.3s; }
+/* Corners: 5px, or a quarter of a narrow part (--r, home.js fit()). Bars: one width, --bw; home.js counts what fits and
+   they run edge to edge (the space between them gives, never their width); a lone bar is centred. */
+.wave { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 0 var(--bp); border-radius: min(5px, var(--r, 5px)); background: var(--fill); overflow: hidden; transition: background-color 0.4s, box-shadow 0.3s; }
 .wave i { flex: none; width: var(--bw); height: var(--a); border-radius: 2px; background: var(--bar); transition: background-color 0.4s; }
+.wave i:only-child { margin: 0 auto; }
 .strip { --sh: 40px; height: var(--sh); border-radius: min(5px, var(--r, 5px)); position: relative; overflow: hidden; display: flex; }
 /* One tile per frame-width (home.js strip()): frame --f of the sprite's --n, centred in its tile, never stretched. */
 .strip i { flex: 1 1 0; min-width: 0; background: url(demo/strip.jpg) no-repeat; background-size: auto 100%; background-position: calc(50% + (var(--n) / 2 - var(--f) - 0.5) * var(--sh) * var(--fa)) 0; } /* each part shows its own frames, at their true shape */
@@ -123,7 +126,7 @@
 .clip.flag .wave { background: color-mix(in srgb, var(--red) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--red) 45%, transparent); }
 .clip.flag .wave i { background: var(--red); }
 .clip.flag .strip::after { opacity: 1; }
-.clip.gone { flex-grow: 0.0001; margin-right: 0; opacity: 0; pointer-events: none; }
+.clip.gone { flex-grow: 0.0001; min-width: 0; margin-right: 0; opacity: 0; pointer-events: none; }
 .clip.back .wave { box-shadow: inset 0 0 0 1px var(--line-3); background: var(--fill-2); }
 .clip.back .wave i { background: var(--bar); }
 .clip.back .strip::after { opacity: 0.18; }
@@ -169,7 +172,7 @@
   .c-top { padding: 14px 16px; gap: 8px; } .count b { font-size: 22px; } .count small { display: none; }
   .status { padding: 0 10px 0 9px; gap: 7px; font-size: 12px; }
   .c-body { padding: 18px 16px 20px; gap: 18px; }
-  .track { height: 120px; } .strip { --sh: 30px; } .clip { margin-right: 2px; } .wave { --bw: 3px; gap: 1px; padding: 0 1px; }
+  .track { --bw: 3px; --bp: 1px; height: 120px; } .strip { --sh: 30px; } .clip { margin-right: 2px; } .wave { gap: 1px; }
   .work { gap: 20px; }
   .work-b { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .cap { font-size: 16px; -webkit-text-stroke-width: 4px; }
@@ -244,7 +247,7 @@
 /* Captions: the take plays, captioned word by word; the styles are the app's own. */
 .t-caps .viz { padding-top: 24px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
 .cap-frame { position: relative; flex: 1; min-height: 340px; border-radius: 18px; overflow: hidden; background: #000; box-shadow: inset 0 0 0 1px var(--line-2); cursor: pointer; }
-.cap-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cap-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; } /* the take is filmed from below: keep the face */
 .cap-frame .words { position: absolute; left: 12px; right: 12px; bottom: 19%; margin: 0; text-align: center; font: 900 23px/1.25 var(--sans); letter-spacing: -0.01em; color: #fff; pointer-events: none; }
 [data-style="highlight"] .words, [data-style="yellow"] .words { -webkit-text-stroke: 6px #151515; paint-order: stroke fill; }
 [data-style="highlight"] .words .on { color: #FF5A6A; }
@@ -269,8 +272,8 @@
   @keyframes ready20 { 0%, 8% { filter: grayscale(1) brightness(0.45); opacity: 1; } 20%, 86% { filter: none; opacity: 1; } 100% { filter: grayscale(1) brightness(0.45); } }
 }
 @media (prefers-reduced-motion: reduce) { .grid20 i { filter: none; } }
-.in .grid20 i:nth-child(4n+1) { background-image: url(frame-164.webp); } .in .grid20 i:nth-child(4n+2) { background-image: url(frame-228.webp); }
-.in .grid20 i:nth-child(4n+3) { background-image: url(frame-489.webp); } .in .grid20 i:nth-child(4n) { background-image: url(frame-1236.webp); }
+.in .grid20 i:nth-child(4n+1) { background-image: url(frame-152.webp); } .in .grid20 i:nth-child(4n+2) { background-image: url(frame-208.webp); }
+.in .grid20 i:nth-child(4n+3) { background-image: url(frame-479.webp); } .in .grid20 i:nth-child(4n) { background-image: url(frame-989.webp); }
 /* The looping demos rest while off screen (home.js marks the visible ones .live). */
 .js .viz:not(.live) *, .js .viz:not(.live) *::before, .js .viz:not(.live) *::after { animation-play-state: paused; }
 .g-k { margin: 12px 0 0; font-size: 13px; color: var(--text-3); }

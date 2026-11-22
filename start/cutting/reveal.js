@@ -2,9 +2,11 @@
 // receipt lines, and its removed ranges as pieces a page can draw and move. A port of the app's reveal.ts
 // (app/src/features/cutting/progress/), checked by site/tools/start/test-cutting.mjs: change the two together. Pure.
 
-// The receipt's lines, in print order; every reason is in exactly one, so raw minus the lines is the cut.
+// The receipt's lines, in print order; every removal is in exactly one (a silent demo, D-115, only in its own), so
+// raw minus the lines is the cut.
 const FAMILIES = [
   { reasons: ['lead_in', 'tail', 'dead_air', 'pause_shortened'], one: 'Dead air', many: 'Dead air', counted: false },
+  { reasons: ['dead_air'], demo: true, one: 'Silent demo', many: 'Silent demos', counted: true },
   { reasons: ['retake'], one: 'Retake', many: 'Retakes', counted: true },
   { reasons: ['filler', 'stutter'], one: 'Filler', many: 'Fillers', counted: true },
   { reasons: ['false_start', 'meta', 'off_topic'], one: 'Other mistake', many: 'Other mistakes', counted: true },
@@ -16,7 +18,7 @@ export function revealOf(cutlist) {
   const pace = cutlist.paces[cutlist.default_pace];
   const lines = [];
   for (const family of FAMILIES) {
-    const spans = pace.removals.filter((r) => family.reasons.includes(r.reason));
+    const spans = pace.removals.filter((r) => family.reasons.includes(r.reason) && !r.demo === !family.demo);
     if (spans.length === 0) continue;
     const label = !family.counted ? family.one : spans.length === 1 ? family.one : `${family.many} ×${spans.length}`;
     lines.push({ label, ms: spans.reduce((ms, r) => ms + r.src_out_ms - r.src_in_ms, 0) });

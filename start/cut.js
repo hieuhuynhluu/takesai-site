@@ -22,7 +22,7 @@ export const offered = enabled && canRead;
 const MAX_MS = 61500, POLL_MS = 2500, CUT_LIMIT_MS = 5 * 60000;
 // The example's receipt labels (make-demo.py: the app's, app/src/features/editor/receipt-lines.ts) back to the reasons the player groups.
 const REASON = { 'Lead-in': 'lead_in', Tail: 'tail', 'Dead air': 'dead_air', 'Long pause': 'pause_shortened', Filler: 'filler', Stutter: 'stutter',
-  'False start': 'false_start', 'Earlier take': 'retake', Remark: 'meta', 'Off topic': 'off_topic' };
+  'False start': 'false_start', 'Earlier take': 'retake', Remark: 'meta', 'Off topic': 'off_topic', 'Silent demo': 'dead_air' };
 
 // The web's own words for each code: contracts/error-codes.json says "phone", and a browser is not one.
 const COPY = {
@@ -134,7 +134,7 @@ async function showExample(from) {
     const demo = await (await fetch('../assets/demo/demo.json')).json();
     if (phase !== 'example') return;
     const data = { duration: demo.duration, wave: demo.wave, waveStep: demo.waveStep, words: demo.words,
-      segments: demo.segments.map((sg) => ({ s: sg.s, e: sg.e, ...(sg.cut ? { reason: REASON[sg.cut.replace(/ #\d+$/, '')] ?? 'dead_air' } : {}) })) };
+      segments: demo.segments.map((sg) => ({ s: sg.s, e: sg.e, ...(sg.cut ? { reason: REASON[sg.cut.replace(/ #\d+$/, '')] ?? 'dead_air', demo: sg.cut.startsWith('Silent demo') } : {}) })) };
     showPlayer({ src: '../assets/demo/raw.mp4', cutSrc: '../assets/demo/cut.mp4', poster: '../assets/demo/poster.jpg', data, title: 'Here’s one we cut.', from: 'example',
       note: 'A real take and its real cut. TakesAI does this to every video you send.', own: enabled && canRead && store.get(CUT)?.state !== 'ready' });
     ctx.track('start_example_opened', { from });
@@ -370,7 +370,7 @@ async function ready(mine, id) {
     const s = Math.max(at, r.src_in_ms / 1000), e = r.src_out_ms / 1000;
     if (e <= s) continue;
     if (s > at) segments.push({ s: at, e: s });
-    segments.push({ s, e, reason: r.reason });
+    segments.push({ s, e, reason: r.reason, demo: r.demo }); // demo: a silent demo (cutlist/1, D-115)
     at = e;
   }
   if (at < D) segments.push({ s: at, e: D });

@@ -42,7 +42,7 @@
     var undo = '<svg class="undo" viewBox="0 0 16 16"><path d="M6 10.5 2.5 7 6 3.5"/><path d="M2.5 7h7a4 4 0 0 1 4 4v1.5"/></svg>';
     var redo = '<svg class="redo" viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><path d="M14 3 5.5 10.5M10 10l4 3M5.5 5.5 8 8"/></svg>';
     var play = '<svg class="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></svg>';
-    var D, RAW_S, SEGS, CUTS, KEPT1, WAVE, STEP, FRAMES, FA, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '', settleT = 0, resizeT = 0;
+    var D, RAW_S, SEGS, CUTS, KEPT1, WAVE, STEP, FRAMES, FA, LINES = [], total, timers = [], raf = 0, phase = 'idle', mode = 'after', visible = false, started = false, paused = false, shown = -1, capKey = '', settleT = 0, resizeT = 0, press = null;
     var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
 
     fetch('assets/demo/demo.json').then(function (r) { return r.json(); }).then(build).catch(function () {});
@@ -61,7 +61,6 @@
         el.className = 'clip'; el.style.setProperty('--g', len.toFixed(3));
         el.innerHTML = '<div class="wave"></div><div class="strip"></div>';
         track.insertBefore(el, ph); sg.el = el;
-        el.addEventListener('click', function () { seekTo(sg); });
         if (!sg.cut) return;
         var li = document.createElement('li');
         li.className = 'x p';
@@ -101,18 +100,25 @@
       var room = track.clientWidth - on.length * parseFloat(getComputedStyle(KEPT1.el).marginRight), fw = KEPT1.el.lastChild.clientHeight * FA;
       if (room <= 0 || !fw) return;
       clearTimeout(settleT); if (!now) settleT = setTimeout(fit, 950, true); // .clip's flex-grow runs 0.9 s
+      // A part too short for one bar is held at one bar's width (.clip's min-width); the rest share what is left by time.
+      var least = bar.w + 2 * bar.pad, held = [], more;
+      do {
+        held = held.concat(more || []);
+        var hr = room - held.length * least, hs = secs - held.reduce(function (n, sg) { return n + sg.e - sg.s; }, 0);
+        more = on.filter(function (sg) { return held.indexOf(sg) < 0 && hr * (sg.e - sg.s) / hs < least; });
+      } while (more.length);
       on.forEach(function (sg) {
-        var w = room * (sg.e - sg.s) / secs;
+        var w = held.indexOf(sg) < 0 ? hr * (sg.e - sg.s) / hs : least;
         sg.el.style.setProperty('--r', (w / 4).toFixed(1) + 'px'); // a narrow part's corners stay a quarter of it: never a pill
         wave(sg, w, bar); strip(sg, w / fw, now);
       });
     }
 
     // Waveform bars, each the loudest stretch of the take it covers, all one width (`bar`, from the CSS) however wide the
-    // part: as many as fit its width `w` (one when only a bar fits, none in a part narrower than a bar) and at most one a
-    // tenth of a second, centred.
+    // part: as many as fit its width `w`, at least one, spread edge to edge (.wave's space-between), so no part has an
+    // empty band.
     function wave(sg, w, bar) {
-      var len = sg.e - sg.s, bars = Math.max(w >= bar.w ? 1 : 0, Math.min(Math.round(len / STEP), Math.floor((w - 2 * bar.pad + bar.gap) / (bar.w + bar.gap)))), out = '';
+      var len = sg.e - sg.s, bars = Math.max(1, Math.floor((w - 2 * bar.pad + bar.gap) / (bar.w + bar.gap))), out = '';
       if (bars === sg.bars) return;
       sg.bars = bars;
       for (var b = 0; b < bars; b++) {
@@ -143,7 +149,12 @@
     function rawToCut(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (sg.cut) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
     function elapsed(t) { var acc = 0; for (var i = 0; i < SEGS.length; i++) { var sg = SEGS[i]; if (!plays(sg)) continue; if (t < sg.e) return acc + Math.max(0, t - sg.s); acc += sg.e - sg.s; } return acc; }
     function firstPlaying(from) { for (var i = 0; i < SEGS.length; i++) if (plays(SEGS[i]) && SEGS[i].e > from) return SEGS[i]; return null; }
-    function placePH(sg, frac) { ph.style.transform = 'translateX(' + (sg.el.offsetLeft + Math.min(1, Math.max(0, frac)) * sg.el.offsetWidth) + 'px)'; } // .track is the parts' offset parent
+    // The playhead runs from a part's left edge to the next part's, through the margin between them, so it glides at one
+    // speed and never hops a seam (the playhead is the track's last child; .track is the parts' offset parent).
+    function placePH(sg, frac) {
+      var el = sg.el, nx = el.nextElementSibling, x = el.offsetLeft, end = nx !== ph ? nx.offsetLeft : x + el.offsetWidth;
+      ph.style.transform = 'translateX(' + (x + Math.min(1, Math.max(0, frac)) * (end - x)) + 'px)';
+    }
 
     // ---- labels: the switch, the counter, the ruler, the total ----
     function setCount(v, label) {
@@ -205,7 +216,7 @@
       if (at != null) v.currentTime = at;
       ph.classList.add('on');
       draw(v === vCut ? cutToRaw(v.currentTime) : v.currentTime);
-      if (paused || !visible) return;
+      if (paused || !visible || (press && press.on)) return; // a drag on the timeline plays once it is let go
       var start = function () { v.play().catch(function () {}); raf = requestAnimationFrame(tick); };
       if (v.seeking) v.addEventListener('seeked', start, { once: true }); else start();
     }
@@ -271,10 +282,45 @@
         go(false, t0 + 0.01);
       } else go(true);
     }
-    function seekTo(sg) {
-      if (!SEGS || phase !== 'play' || !plays(sg)) return;
-      go(false, (active() === vCut ? rawToCut(sg.s) : sg.s) + 0.01);
+    // ---- the timeline: a tap or a drag lands where it is made (site/README.md, "The timelines' taps") ----
+    // The take's time under the pointer, over the parts on show: the inverse of placePH, so the playhead lands under it (a
+    // seam belongs to the part before it). Measured as drawn, to the fraction of a pixel and with any transform on the way
+    // (the console enters scaled, home.css .console-wrap, and a tap can come before it settles).
+    function timeAt(x) {
+      var on = SEGS.filter(function (sg) { return !sg.el.classList.contains('gone'); }), box = function (el) { return el.getBoundingClientRect(); };
+      for (var i = 0; i < on.length; i++) {
+        if (i < on.length - 1 && x >= box(on[i + 1].el).left) continue;
+        var el = on[i].el, nx = el.nextElementSibling, a = box(el).left, z = nx !== ph ? box(nx).left : box(el).right;
+        // 0.02 s short of the part's end, so a seek's + 0.01 s (the keyed frame) never carries it into the next part
+        return Math.min(on[i].e - 0.02, on[i].s + Math.min(1, Math.max(0, (x - a) / (z - a))) * (on[i].e - on[i].s));
+      }
     }
+    // A tap in the opening stops it in Before, at 1x; a tap while the cut closes up finishes it in After (a time that was
+    // cut plays from the next kept part). The time is read from the timeline as it was tapped, before the mode changes it.
+    function scrub(x) {
+      var t = timeAt(x);
+      if (phase !== 'play') { var m = phase === 'intro' ? 'before' : 'after'; cancelAnimationFrame(raf); vRaw.pause(); settle(); setMode(m); setStatus(m === 'before' ? 'raw' : 'ready', m === 'before' ? 'Raw take' : 'Cut ready'); }
+      go(false, (active() === vCut ? rawToCut(t) : t) + 0.01);
+    }
+    // A mouse seeks as it presses and scrubs as it drags; a finger seeks when it lifts, or scrubs once it moves sideways, and
+    // a finger that moves up or down is scrolling the page (.track is touch-action: pan-y), so it never moves the video.
+    function grab(x, drag) { press.on = true; if (drag) track.setPointerCapture(press.id); vRaw.pause(); vCut.pause(); scrub(x); } // a drag keeps the pointer past the track's ends
+    track.addEventListener('pointerdown', function (e) {
+      if (!SEGS || phase === 'idle' || e.button) return;
+      press = { id: e.pointerId, x: e.clientX, y: e.clientY, on: false };
+      if (e.pointerType === 'mouse') grab(e.clientX, true);
+    });
+    track.addEventListener('pointermove', function (e) {
+      if (!press || e.pointerId !== press.id) return;
+      if (!press.on) { var dx = Math.abs(e.clientX - press.x), dy = Math.abs(e.clientY - press.y); if (dy > 8 && dy >= dx) { press = null; return; } if (dx <= 8) return; }
+      if (press.on) scrub(e.clientX); else grab(e.clientX, true);
+    });
+    track.addEventListener('pointerup', function (e) {
+      if (!press || e.pointerId !== press.id) return;
+      if (!press.on) grab(e.clientX);
+      press = null; go(false);
+    });
+    track.addEventListener('pointercancel', function () { var was = press && press.on; press = null; if (was) go(false); });
     function pick(m) {
       if (phase !== 'play') { cancelAnimationFrame(raf); vRaw.pause(); settle(); }
       setMode(m); setStatus(m === 'before' ? 'raw' : 'ready', m === 'before' ? 'Raw take' : 'Cut ready'); go(true);
@@ -297,9 +343,9 @@
     }, { threshold: 0.15 }).observe(con);
   })();
 
-  /* ---------- Captions tile: real word times (ElevenLabs, the down-jacket take 48.470 s on, a kept line) ---------- */
+  /* ---------- Captions tile: real word times (ElevenLabs, the 1:42 down-jacket take 46.767 s on, a kept line) ---------- */
   var cv = $('capvid'), cw = $('capwords'), cf = $('capframe'), csnd = $('capsnd'), capRaf = 0;
-  var LINES = [[0, 0.85, [["It's", 0.05], ['super', 0.21], ['light,', 0.53]]], [0.85, 1.5, [['but', 0.89], ["it's", 0.97], ['actually', 1.13]]], [1.5, 9, [['really', 1.53], ['warm.', 1.85]]]];
+  var LINES = [[0, 1.05, [["It's", 0.01], ['even', 0.17], ['waterproof,', 0.41]]], [1.05, 1.75, [['so', 1.09], ['it', 1.23], ['repels', 1.33]]], [1.75, 9, [['light', 1.81], ['rain.', 2.07]]]];
   function capDraw(t) {
     var L = LINES.filter(function (l) { return t >= l[0] && t < l[1]; })[0] || LINES[1], k = 0;
     L[2].forEach(function (w, i) { if (t >= w[1]) k = i; });
