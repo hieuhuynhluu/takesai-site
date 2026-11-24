@@ -35,9 +35,11 @@ function save(patch) {
 }
 const now = () => state.videos_per_day ?? m.DEFAULT_VIDEOS_PER_DAY;
 const edit = () => state.edit_minutes ?? m.DEFAULT_EDIT_MINUTES;
+/** The minutes a video steps 5 to 7 count: the answer, up to a waking day's editing (maths.js countedEdit). */
+const counted = () => m.countedEdit(now(), edit());
 /** The promise as later screens read it back ("35 a week"), or null before one is made. */
 const echo = () => (state.target_videos_per_day == null ? null
-  : m.targetScreen({ nowPerDay: now(), targetPerDay: state.target_videos_per_day, editMinutes: edit() }).goalWeek);
+  : m.targetScreen({ nowPerDay: now(), targetPerDay: state.target_videos_per_day, editMinutes: counted() }).goalWeek);
 // A plan and period chosen before the quiz (the home page's plan picker sends them when its QUIZ_ON is true). Each is one of a fixed list or ignored.
 const HERE = new URLSearchParams(location.search), ORDER = ['starter', 'pro', 'ultimate'];
 const asked = { plan: ORDER.find((t) => t === HERE.get('plan')), period: ['monthly', 'yearly'].find((p) => p === HERE.get('period')) };
@@ -115,7 +117,8 @@ function mark(group) {
 // ---- Screens 3 and 4: sliders over the app's stops ----
 /** The thumb is 30 px wide, so the fill ends at its centre, not at the bare percentage. */
 const fill = (r) => r.style.setProperty('--p', `calc(${+r.max ? r.value / r.max : 0} * (100% - 30px) + 15px)`);
-function slider(prefix, stops, field, value) {
+/** `after(stop)` runs on every paint, for a line that follows the answer. */
+function slider(prefix, stops, field, value, after) {
   const r = $(prefix + '-r');
   const paint = () => {
     const s = stops[+r.value];
@@ -123,6 +126,7 @@ function slider(prefix, stops, field, value) {
     $(prefix + '-u').textContent = s.unit;
     r.setAttribute('aria-valuetext', `${s.spoken ?? s.number} ${s.unit}`);
     fill(r);
+    after?.(s);
   };
   r.max = stops.length - 1;
   r.value = m.stopIndex(stops, value());
@@ -166,11 +170,14 @@ const RENDER = {
   who: () => mark(sectionOf('who').querySelector('.s-opts')),
   goal: () => mark(sectionOf('goal').querySelector('.s-opts')),
   videos: () => { videosValue = slider('videos', m.VIDEO_STOPS, 'videos_per_day', now); },
-  'edit-time': () => { editValue = slider('edit', m.EDIT_STOPS, 'edit_minutes', edit); },
+  // More than a waking day of editing is counted as a waking day from here on, and the step says so as it is answered.
+  'edit-time': () => {
+    editValue = slider('edit', m.EDIT_STOPS, 'edit_minutes', edit, (s) => { const note = $('edit-cap'); note.textContent = m.capNote(now(), s.value); note.hidden = !note.textContent; });
+  },
 
   // The app's savings screen (savings.tsx): two receipts whose lines add up to their totals.
   savings() {
-    const f = m.savings(now(), edit()), e = edit();
+    const f = m.savings(now(), counted()), e = counted();
     const editorCost = f.videosPerMonth * m.EDITOR_PER_VIDEO, price = m.TIERS[f.tier].monthly_price;
     const { handMin, appMin, whole, backMin } = m.receiptMonth(f.videosPerMonth, e);
     const timeValue = (min) => m.keepUnits(whole ? `${Math.round(min / 60).toLocaleString('en-US')} h` : m.formatTime(min, { exact: true }));
@@ -190,25 +197,52 @@ const RENDER = {
     count($('savings-money').lastChild.lastChild, saved, cents);
     $('savings-notes').replaceChildren(...[
       `Editing by hand takes you about ${m.formatTime(e)} a video. With TakesAI, about ${m.APP_MINUTES_PER_VIDEO} minute.`,
+      m.capNote(now(), edit()),
       `An editor charges about $${m.EDITOR_PER_VIDEO} a video.`,
       `TakesAI ${TIER_NAME[f.tier]} is $${price} a month.`,
-    ].map((line) => Object.assign(document.createElement('li'), { textContent: line })));
+    ].filter(Boolean).map((line) => Object.assign(document.createElement('li'), { textContent: line })));
   },
 
-  // The app's clock screen (clock.tsx): the year in whole days, the day's share on the dial.
+  // The app's clock screen (clock.tsx): the year as a receipt, its editing days in red, the days TakesAI gives back struck
+  // through, and the plan for these answers at its price a day (maths.js clockScreen).
   clock() {
-    const f = m.savings(now(), edit());
-    const fullDays = (n) => `${n} full ${n === 1 ? 'day' : 'days'}`;
-    const spent = f.fullDaysSpent, days = f.fullDaysBack;
-    const back = days >= 1 ? fullDays(days) : m.formatTime(f.timeBack[3]);
-    $('clock-h').textContent = spent >= 1 ? `Editing takes ${fullDays(spent)} of your year.` : `Editing takes ${m.formatPercent(f.dayPercent)} of your day.`;
-    $('clock-back').textContent = m.formatTime(f.timeBack[0]);
-    $('clock-keep').textContent = spent > 1 && days >= 1 ? `${days} of them` : `${back} a year`;
-    $('clock-price').textContent = f.asLowAs;
-    $('clock-dial').setAttribute('aria-label', `Editing takes ${m.formatPercent(f.dayPercent)} of your day. ${m.formatTime(f.timeBack[0])} yours again, daily.`);
-    const arc = $('clock-arc');
-    arc.style.setProperty('--p', 0);
-    requestAnimationFrame(() => requestAnimationFrame(() => arc.style.setProperty('--p', Math.max(1, f.dayPercent))));
+    const c = m.clockScreen(now(), counted()), y = c.marks, card = $('clock-year'), svg = $('clock-marks');
+    const span = (text) => Object.assign(document.createElement('span'), { textContent: text });
+    $('clock-h').textContent = c.title;
+    $('clock-keep').replaceChildren(c.keep[0], Object.assign(document.createElement('strong'), { textContent: c.keep[1] }), c.keep[2]);
+    $('clock-price').textContent = c.price;
+    $('clock-head').replaceChildren(...c.head.map(span));
+    $('clock-foot').replaceChildren(...c.foot.map(span));
+    svg.setAttribute('viewBox', `-3 -1 ${y.width + 6} ${y.height + 2}`); // the strikes reach 2 units past the marks
+    for (const k of ['days', 'kept', 'back']) svg.querySelector('.' + k).setAttribute('d', y[k]);
+    card.setAttribute('aria-label', c.label);
+    // Each row given back: its days still solid red, and the pen's stroke across it (start.css .s-year).
+    const path = (cls, d) => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('class', cls); p.setAttribute('d', d); return p; };
+    svg.querySelectorAll('.row').forEach((p) => p.remove());
+    const rows = y.rows.map((r) => {
+      const solid = path('row solid', r.back), pen = path('row strike', r.strike);
+      pen.style.strokeDasharray = r.length;
+      svg.append(solid, pen);
+      return [solid, pen, r.length];
+    });
+    // The motion (maths.js yearMotion), from the start each time the step shows. Without it (Reduce Motion, or no Web
+    // Animations) the receipt is simply there, finished: every animation runs from a state back to the page's own.
+    const parts = [$('clock-head'), $('clock-foot'), $('clock-keep'), $('clock-price'), svg];
+    parts.flatMap((el) => el.getAnimations?.({ subtree: true }) ?? []).forEach((a) => a.cancel()); // older Safari has animate() only
+    if (reduce || !svg.animate) return;
+    const t = m.yearMotion(rows.length), out = 'cubic-bezier(0.16, 1, 0.3, 1)';
+    const at = (el, frames, delay, duration, easing = out) => el.animate(frames, { delay, duration, easing, fill: 'backwards' });
+    const drop = [{ opacity: 0, transform: 'translateY(-5px)' }, { opacity: 1, transform: 'none' }];
+    at($('clock-head'), drop, 0, 300);
+    at(svg, [{ transform: 'translateY(-100%)' }, { transform: 'none' }], t.feed, t.feedFor); // fed out of the rule (.s-feed)
+    at($('clock-foot'), drop, t.foot, 300);
+    rows.forEach(([solid, pen, length], i) => {
+      at(solid, [{ opacity: 1 }, { opacity: 0 }], t.cut + i * t.row, t.row, 'linear');
+      at(pen, [{ strokeDashoffset: length }, { strokeDashoffset: 0 }], t.cut + i * t.row, t.row, 'linear');
+    });
+    const rise = [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }];
+    at($('clock-keep'), rise, t.payoff, 450);
+    at($('clock-price'), rise, t.payoff + 120, 450);
   },
 
   // The app's target screen (target.tsx): question 3's slider again, from today's answer up, in videos a week.
@@ -222,7 +256,7 @@ const RENDER = {
     $('target-go').disabled = false;
     const paint = (print) => {
       const i = +r.value;
-      const s = m.targetScreen({ persona: state.persona, goal: state.goal, nowPerDay: now(), targetPerDay: stops[i].value, editMinutes: edit() });
+      const s = m.targetScreen({ persona: state.persona, goal: state.goal, nowPerDay: now(), targetPerDay: stops[i].value, editMinutes: counted() });
       $('target-h').textContent = s.title;
       $('target-lead').textContent = s.lead;
       $('target-n').textContent = shown[i].number;

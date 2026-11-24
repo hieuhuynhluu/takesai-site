@@ -94,6 +94,7 @@
       <input class="s-range" id="edit-r" type="range" min="0" max="10" step="1" aria-label="Editing time a video">
       <p class="s-ends" aria-hidden="true"><span>5 minutes</span><span>4+ hours</span></p>
     </div>
+    <p class="s-note" id="edit-cap" role="status" hidden></p>
   </div>
   <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Next</button></div>
 </section>
@@ -114,12 +115,15 @@
 <section class="s-step s-centre" data-step="clock" aria-labelledby="clock-h" hidden>
   <div class="s-body">
     <h1 id="clock-h" tabindex="-1"></h1>
-    <div class="s-dial" role="img" id="clock-dial">
-      <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="t" cx="120" cy="120" r="104"/><circle class="k" cx="120" cy="120" r="116.5" pathLength="240"/><circle class="a" id="clock-arc" cx="120" cy="120" r="104" pathLength="100"/></svg>
-      <p><b id="clock-back"></b><span>yours again, daily</span></p>
+    <div class="r-wrap s-year-wrap">
+      <div class="receipt s-year" id="clock-year" role="img">
+        <p class="head" id="clock-head"></p>
+        <div class="s-feed"><svg id="clock-marks" aria-hidden="true"><path class="days"/><path class="kept"/><path class="back"/></svg></div>
+        <p class="foot" id="clock-foot"></p>
+      </div>
     </div>
-    <p class="s-keep">With TakesAI you keep <strong id="clock-keep"></strong>.</p>
-    <p class="s-note">Plans start at $<span id="clock-price">19.99</span> a month.</p>
+    <p class="s-keep" id="clock-keep"></p>
+    <p class="s-note s-price" id="clock-price"></p>
   </div>
   <div class="s-foot"><button type="button" class="btn btn-red btn-lg" data-next>Set my target</button></div>
 </section>

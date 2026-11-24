@@ -24,6 +24,11 @@ const hours = [60, 90, 120, 180].map((value) => ({ value, number: String(value /
 /** Minutes of editing a video. */
 export const EDIT_STOPS = [...minutes, ...hours, { value: 240, number: '4+', spoken: '4 or more', unit: 'hours a video' }];
 export const DEFAULT_EDIT_MINUTES = 60;
+/** A waking day, the most editing a day can hold: 10 or more a day at 4 hours a video would be 40 hours. */
+export const WAKING_MINUTES = 16 * 60;
+
+/** The minutes a video the quiz's figures count: the answer, or less where a day's editing would pass a waking day. */
+export const countedEdit = (videosPerDay, editMinutes) => Math.min(editMinutes, WAKING_MINUTES / videosPerDay);
 
 /** The stop nearest a saved value, so any stored number lands on the track. */
 export function stopIndex(stops, value) {
@@ -46,16 +51,18 @@ export function savings(videosPerDay, editMinutes) {
   const savedPerVideo = editMinutes - APP_MINUTES_PER_VIDEO;
   const backDay = videosPerDay * savedPerVideo;
   const backMonth = videosPerMonth * savedPerVideo;
-  const daysSpent = Math.min(365, Math.floor((videosPerMonth * editMinutes * 12) / 60 / 24));
+  const spentYear = videosPerMonth * editMinutes * 12, appYear = videosPerMonth * APP_MINUTES_PER_VIDEO * 12;
+  const daysSpent = Math.min(365, Math.floor(spentYear / 60 / 24));
   return {
     videosPerMonth,
     tier,
     spentMinutesDay: videosPerDay * editMinutes,
     timeBack: [backDay, backDay * 7, backMonth, backMonth * 12],
-    dayPercent: Math.min(100, ((videosPerDay * editMinutes) / 60 / 24) * 100),
+    spentMinutesYear: spentYear,
+    appMinutesYear: appYear,
     fullDaysSpent: daysSpent,
-    fullDaysBack: Math.min(daysSpent, Math.floor((backMonth * 12) / 60 / 24)),
-    asLowAs: TIERS.starter.monthly_price,
+    fullDaysBack: Math.max(0, daysSpent - Math.round(appYear / 60 / 24)),
+    perDay: TIERS[tier].monthly_price / DAYS_PER_MONTH,
   };
 }
 
@@ -79,7 +86,55 @@ export function formatTime(minutes, { exact = false } = {}) {
   return `${grouped(minutes / 60)} h`;
 }
 
-export const formatPercent = (percent) => `${Math.round(percent * 10) / 10}%`;
+/** The clock step's year: 365 day marks in rows of YEAR_COLS, 7 units square on a 10-unit pitch, as SVG paths. The
+ *  first `spent` are the days editing takes by hand; the first `back` of them are the days TakesAI gives back; `kept` are
+ *  the rest of the spent days, `days` the year's other days. `rows` are the rows given back, in order, each with its
+ *  days, its strike (from 2 units before the row to 2 after its last day) and the strike's length: the cut runs row by row. */
+export const YEAR_COLS = 20;
+export function yearMarks(spent, back) {
+  const mark = (i) => `M${(i % YEAR_COLS) * 10} ${Math.floor(i / YEAR_COLS) * 10}h7v7h-7z`;
+  const run = (from, to) => Array.from({ length: Math.max(0, to - from) }, (_, k) => mark(from + k)).join('');
+  const rows = [];
+  for (let first = 0; first < back; first += YEAR_COLS) {
+    const last = Math.min(back, first + YEAR_COLS) - 1, end = (last % YEAR_COLS) * 10 + 9;
+    rows.push({ back: run(first, last + 1), strike: `M-2 ${Math.floor(first / YEAR_COLS) * 10 + 3.5}H${end}`, length: end + 2 });
+  }
+  return { width: YEAR_COLS * 10 - 3, height: Math.ceil(365 / YEAR_COLS) * 10 - 3, back: run(0, back), kept: run(back, spent), days: run(spent, 365), rows };
+}
+
+/** The year receipt's motion in ms, the same on the site and in the app: its head prints, the year feeds down out of the
+ *  rule like paper, its foot prints, then a pen strikes the rows given back one after another (a second at most however
+ *  many rows), each row's red emptying as the pen crosses it, and then what comes back rises in. */
+export function yearMotion(rows) {
+  const row = Math.min(260, 1100 / Math.max(1, rows));
+  return { feed: 150, feedFor: 700, foot: 800, cut: 1000, row, payoff: 1100 + rows * row };
+}
+
+/** Step 4's line once the answers pass a waking day: the figures after it count a waking day, and say so. */
+export const capNote = (videosPerDay, editMinutes) =>
+  videosPerDay * editMinutes > WAKING_MINUTES ? `That’s more than a waking day, so we’ll count ${WAKING_MINUTES / 60} hours a day.` : '';
+
+/** What the clock step says, from the counted answers: the year in whole days and what TakesAI gives back of it, the
+ *  year's receipt (its marks, its head and foot lines), and the plan for these answers at its price a day. Under a whole
+ *  day of editing a year, the year is told in hours and drawn as one day. */
+export function clockScreen(videosPerDay, editMinutes) {
+  const f = savings(videosPerDay, editMinutes), whole = f.fullDaysSpent >= 1, n = f.fullDaysSpent, b = f.fullDaysBack;
+  const days = (d) => `${d} ${d === 1 ? 'day' : 'days'}`, kept = n - b;
+  const stop = VIDEO_STOPS[stopIndex(VIDEO_STOPS, videosPerDay)], plan = f.tier[0].toUpperCase() + f.tier.slice(1);
+  return {
+    // A time never breaks from its unit ("4 / h" at 402 px).
+    title: whole ? `Editing takes ${n} full ${n === 1 ? 'day' : 'days'} of your year.` : `Editing takes ${keepUnits(formatTime(f.spentMinutesYear))} of your year.`,
+    // [before, the figure, after]: the figure is set bold.
+    keep: !whole ? ['TakesAI gives you ', keepUnits(formatTime(f.timeBack[3])), ' of it back.'] : n === 1 ? ['TakesAI gives you ', 'that day', ' back.'] : ['TakesAI gives you ', `${b} of them`, ' back.'],
+    price: `${plan} covers ${stop.number} ${stop.unit}: $${TIERS[f.tier].monthly_price} a month, about $${f.perDay.toFixed(2)} a day.`,
+    head: ['Your year', '365 days'],
+    foot: [`In TakesAI, ${APP_MINUTES_PER_VIDEO} min a video`, whole && kept >= 1 ? days(kept) : keepUnits(formatTime(f.appMinutesYear))],
+    marks: yearMarks(whole ? n : 1, whole ? b : 1),
+    label: whole
+      ? `Your year, 365 days: ${days(n)} editing by hand, ${b} of them given back by TakesAI.`
+      : `Your year, 365 days: ${formatTime(f.spentMinutesYear)} editing by hand, ${formatTime(f.timeBack[3])} of it given back by TakesAI.`,
+  };
+}
 
 // ---- The target ----
 
