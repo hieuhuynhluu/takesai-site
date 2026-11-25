@@ -268,7 +268,7 @@ function checkoutPage() {
 // The webhook ended this trial before any charge (reused trial, M-51): say so, drop the next steps.
 function trialUsed() {
   document.title = "Your trial wasn't started · TakesAI";
-  $("done-h").textContent = "Your trial wasn't started";
+  $("done-h").textContent = "Your trial wasn’t started";
   $("done-lede").textContent = "This email or account has had a TakesAI plan or free trial before, so we ended this trial before any charge. You haven't paid anything. We've emailed you a link to subscribe without a trial.";
   for (const section of document.querySelectorAll("main section")) section.hidden = true;
 }
